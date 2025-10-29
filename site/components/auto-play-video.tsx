@@ -45,10 +45,21 @@ export default function AutoPlayVideo({
   const [showControls, setShowControls] = useState(false);
   const controlsHideTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const [showPlayButtonOverlay, setShowPlayButtonOverlay] = useState(false);
+  const [isMobile] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent,
+    );
+  });
 
   // Helper function to get video URL with fallback
   const getVideoUrl = useCallback((url: string | null | undefined): string => {
-    if (!url) return "";
+    if (!url) {
+      console.warn("Video URL is empty or undefined");
+      return "";
+    }
 
     try {
       // If it's a reddit video URL, use the fallback
@@ -75,6 +86,7 @@ export default function AutoPlayVideo({
       return `/api/media/${url}`;
     } catch (err) {
       console.error("Error getting video URL:", err);
+      setError("Invalid video URL");
       return "";
     }
   }, []);
@@ -164,6 +176,7 @@ export default function AutoPlayVideo({
             intersectionRatio: entries[0]?.intersectionRatio,
             targetVideoIsThis: targetVideo === videoRef.current,
             currentlyPlaying: currentlyPlayingVideo === videoRef.current,
+            isMobile,
           });
         }
 
@@ -171,26 +184,33 @@ export default function AutoPlayVideo({
         if (targetVideo && targetVideo !== currentlyPlayingVideo) {
           pauseAllOtherVideos();
 
-          // For mobile, ensure video is muted before attempting autoplay ONLY if user hasn't set volume
-          const isMobile =
-            /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-              navigator.userAgent,
-            );
-          if (isMobile && targetVideo === videoRef.current) {
-            // Only force mute if user hasn't interacted with volume
-            if (!hasUserInteracted && volume === 1) {
-              targetVideo.muted = true;
+          // Desktop vs Mobile autoplay strategy
+          if (targetVideo === videoRef.current) {
+            if (isMobile) {
+              // Mobile: Only force mute if user hasn't interacted with volume
+              if (!hasUserInteracted && volume === 1) {
+                targetVideo.muted = true;
+              } else {
+                // Respect user's volume setting
+                targetVideo.muted = volume === 0;
+              }
             } else {
-              // Respect user's volume setting
-              targetVideo.muted = volume === 0;
+              // Desktop: Try unmuted first, fallback to muted if blocked
+              if (!hasUserInteracted) {
+                targetVideo.muted = false;
+                targetVideo.volume = 0.5; // Start with moderate volume
+              } else {
+                // Respect user's volume setting
+                targetVideo.muted = volume === 0;
+                targetVideo.volume = volume;
+              }
             }
           }
 
-          // Attempt to play with error handling for mobile autoplay restrictions
+          // Attempt to play with error handling
           targetVideo.play().catch((error) => {
-            // Mobile browsers may block autoplay - this is expected and not a real error
-            console.debug(
-              "Autoplay prevented (mobile restriction):",
+            console.log(
+              `Autoplay ${isMobile ? 'on mobile' : 'with sound'} prevented:`,
               error.name,
             );
 
@@ -203,20 +223,34 @@ export default function AutoPlayVideo({
                 postId: post.id,
                 isMuted: targetVideo.muted,
                 volume: targetVideo.volume,
+                isMobile,
               },
               "AutoPlayVideo",
             );
 
-            // If autoplay fails on mobile, show the play button overlay
-            if (isMobile && targetVideo === videoRef.current) {
+            // Fallback strategy for desktop: try muted autoplay
+            if (!isMobile && targetVideo === videoRef.current) {
+              console.log("Trying muted autoplay fallback for desktop");
+              targetVideo.muted = true;
+              targetVideo.play().catch((retryError) => {
+                console.error("Muted autoplay also failed:", retryError);
+                // Show play button overlay as last resort
+                setShowPlayButtonOverlay(true);
+                setIsPlaying(false);
+              });
+            } else if (targetVideo === videoRef.current) {
+              // Mobile: show play button overlay
+              setShowPlayButtonOverlay(true);
               setIsPlaying(false);
             }
           });
+          
           currentlyPlayingVideo = targetVideo;
 
           // Update state for the video that's now playing
           if (targetVideo === videoRef.current) {
             setIsPlaying(true);
+            setShowPlayButtonOverlay(false);
           }
         } else if (!targetVideo && currentlyPlayingVideo === videoRef.current) {
           // This video was playing but is no longer the most visible, so it's paused
@@ -228,6 +262,7 @@ export default function AutoPlayVideo({
         }
       },
       {
+        // Better thresholds for desktop: 50% visibility
         threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
         rootMargin: "0px",
       },
@@ -242,7 +277,7 @@ export default function AutoPlayVideo({
         observer.unobserve(containerRef.current);
       }
     };
-  }, [videoAsset, pauseAllOtherVideos]);
+  }, [videoAsset, pauseAllOtherVideos, hasUserInteracted, volume, isMobile, post.id]);
 
   // Update time display
   useEffect(() => {
@@ -382,7 +417,7 @@ export default function AutoPlayVideo({
     };
   }, []);
 
-  // Handle video error
+  // Handle video error with retry mechanism
   const handleError = useCallback(
     (e: React.SyntheticEvent<HTMLVideoElement>) => {
       console.error("Video error:", e);
@@ -393,25 +428,40 @@ export default function AutoPlayVideo({
       if (error) {
         switch (error.code) {
           case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
-            errorMsg = "Video format not supported";
+            errorMsg = "Video format not supported by your browser";
             break;
           case MediaError.MEDIA_ERR_NETWORK:
-            errorMsg = "Network error loading video";
+            errorMsg = "Network error loading video. Check your connection.";
             break;
           case MediaError.MEDIA_ERR_DECODE:
-            errorMsg = "Error decoding video";
+            errorMsg = "Error decoding video. The file may be corrupted.";
             break;
           case MediaError.MEDIA_ERR_ABORTED:
-            errorMsg = "Video playback aborted";
+            errorMsg = "Video playback was interrupted";
             break;
         }
+        console.error("Video error details:", {
+          code: error.code,
+          message: error.message,
+          retryCount,
+        });
+      }
+
+      // Auto-retry up to 2 times for network errors
+      if (error?.code === MediaError.MEDIA_ERR_NETWORK && retryCount < 2) {
+        console.log(`Auto-retrying video load (attempt ${retryCount + 1}/2)`);
+        setTimeout(() => {
+          setRetryCount(retryCount + 1);
+          video.load();
+        }, 1000);
+        return;
       }
 
       setError(errorMsg);
       setHasUserInteracted(false);
       setIsPlaying(false);
     },
-    [],
+    [retryCount],
   );
 
   // Format time helper function
@@ -504,19 +554,25 @@ export default function AutoPlayVideo({
         )}
       >
         <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
-        <p className="text-center text-gray-700 dark:text-gray-300 mb-4">
+        <p className="text-center text-gray-700 dark:text-gray-300 mb-2 font-medium">
           {error}
         </p>
+        {retryCount > 0 && (
+          <p className="text-center text-gray-500 dark:text-gray-400 text-sm mb-4">
+            Retried {retryCount} time{retryCount > 1 ? 's' : ''}
+          </p>
+        )}
         <button
           onClick={() => {
             setError(null);
+            setRetryCount(0);
             if (videoRef.current) {
               videoRef.current.load();
             }
           }}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+          className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium shadow-sm"
         >
-          Retry
+          Retry Loading
         </button>
       </div>
     );
@@ -549,10 +605,8 @@ export default function AutoPlayVideo({
         <div className="relative w-full h-full">
           <video
             ref={videoRef}
-            className="w-full h-full object-contain bg-black"
-            playsInline
-            webkit-playsinline="true"
-            x5-playsinline="true"
+            className="w-full h-full object-contain bg-black cursor-pointer"
+            playsInline={isMobile}
             preload="metadata"
             loop
             controls={false}
@@ -563,7 +617,17 @@ export default function AutoPlayVideo({
             onError={handleError}
             onClick={(e) => {
               e.stopPropagation();
-              onVideoPlay(post);
+              // Desktop: Click to toggle play/pause
+              if (!isMobile) {
+                if (videoRef.current?.paused) {
+                  videoRef.current?.play().catch(console.error);
+                } else {
+                  videoRef.current?.pause();
+                }
+              } else {
+                // Mobile: Open modal
+                onVideoPlay(post);
+              }
             }}
             disablePictureInPicture
             controlsList="nodownload noremoteplayback"
@@ -587,9 +651,27 @@ export default function AutoPlayVideo({
             </div>
           )}
 
-          {!isPlaying && (
-            <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-              <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+          {(!isPlaying || showPlayButtonOverlay) && (
+            <div 
+              className="absolute inset-0 flex items-center justify-center z-10 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowPlayButtonOverlay(false);
+                setHasUserInteracted(true);
+                if (videoRef.current) {
+                  videoRef.current.muted = false;
+                  videoRef.current.play().catch((err) => {
+                    console.error("Manual play failed:", err);
+                    // Try muted as fallback
+                    if (videoRef.current) {
+                      videoRef.current.muted = true;
+                      videoRef.current.play().catch(console.error);
+                    }
+                  });
+                }
+              }}
+            >
+              <div className="w-20 h-20 bg-white/30 hover:bg-white/40 rounded-full flex items-center justify-center backdrop-blur-sm transition-all">
                 <Play className="w-10 h-10 text-white ml-1" fill="white" />
               </div>
             </div>
