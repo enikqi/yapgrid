@@ -14,6 +14,7 @@ import {
 import type { Post, Asset } from "@/lib/types";
 import { mobileLogger } from "@/lib/mobile-logger";
 import { cn } from "@/lib/utils";
+import { useMobileDetection } from "@/lib/use-mobile-detection";
 
 interface AutoPlayVideoProps {
   post: Post & { assets: Asset[] };
@@ -47,12 +48,7 @@ export default function AutoPlayVideo({
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const [showPlayButtonOverlay, setShowPlayButtonOverlay] = useState(false);
-  const [isMobile] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent,
-    );
-  });
+  const isMobile = useMobileDetection();
 
   // Helper function to get video URL with fallback
   const getVideoUrl = useCallback((url: string | null | undefined): string => {
@@ -450,11 +446,14 @@ export default function AutoPlayVideo({
       // Auto-retry up to 2 times for network errors
       if (error?.code === MediaError.MEDIA_ERR_NETWORK && retryCount < 2) {
         console.log(`Auto-retrying video load (attempt ${retryCount + 1}/2)`);
-        setTimeout(() => {
+        const timeoutId = setTimeout(() => {
           setRetryCount(retryCount + 1);
-          video.load();
+          if (video && !video.paused) {
+            video.load();
+          }
         }, 1000);
-        return;
+        // Store timeout for cleanup
+        return () => clearTimeout(timeoutId);
       }
 
       setError(errorMsg);

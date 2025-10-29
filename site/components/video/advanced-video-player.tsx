@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, Loader2, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useMobileDetection } from '@/lib/use-mobile-detection'
 
 type VideoPlayerProps = {
   src: string
@@ -36,13 +37,8 @@ export function AdvancedVideoPlayer({
   const controlsRef = useRef<HTMLDivElement>(null)
   const progressBarRef = useRef<HTMLDivElement>(null)
   
-  // Detect mobile once on mount
-  const [isMobile] = useState(() => {
-    if (typeof window === 'undefined') return false
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent
-    )
-  })
+  // Detect mobile using shared hook
+  const isMobile = useMobileDetection()
   
   // Desktop: default unmuted with 0.5 volume, Mobile: muted
   const [isPlaying, setIsPlaying] = useState(autoPlay)
@@ -58,6 +54,7 @@ export function AdvancedVideoPlayer({
   const [wasPlayingBeforeDrag, setWasPlayingBeforeDrag] = useState(false)
   const [showVolumeControl, setShowVolumeControl] = useState(false)
   const [lastTap, setLastTap] = useState(0)
+  const [isHovered, setIsHovered] = useState(false)
   const doubleTapTimeout = useRef<NodeJS.Timeout>()
   const hideControlsTimeout = useRef<NodeJS.Timeout>()
 
@@ -355,10 +352,9 @@ export function AdvancedVideoPlayer({
       const isVideoFocused = document.activeElement === videoRef.current || 
                              document.activeElement === containerRef.current
       const isInFullscreen = !!document.fullscreenElement
-      const isVideoHovered = containerRef.current.matches(':hover')
       
       // Only handle shortcuts if video is focused, hovered, or in fullscreen
-      if (!isVideoFocused && !isInFullscreen && !isVideoHovered) return
+      if (!isVideoFocused && !isInFullscreen && !isHovered) return
       
       // Don't handle if user is typing in an input
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
@@ -471,7 +467,24 @@ export function AdvancedVideoPlayer({
     return () => {
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [controls, togglePlayPause, toggleMute, toggleFullscreen, isPlaying])
+  }, [controls, togglePlayPause, toggleMute, toggleFullscreen, isPlaying, isHovered])
+  
+  // Track hover state efficiently
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
+    
+    const handleMouseEnter = () => setIsHovered(true)
+    const handleMouseLeave = () => setIsHovered(false)
+    
+    container.addEventListener('mouseenter', handleMouseEnter)
+    container.addEventListener('mouseleave', handleMouseLeave)
+    
+    return () => {
+      container.removeEventListener('mouseenter', handleMouseEnter)
+      container.removeEventListener('mouseleave', handleMouseLeave)
+    }
+  }, [])
 
   return (
     <div 
