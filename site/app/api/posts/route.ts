@@ -82,9 +82,26 @@ export async function GET(request: NextRequest) {
 
     // Filter by asset type if specified
     if (assetType) {
-      where.assets = {
-        some: {
-          type: assetType as any
+      if (assetType === 'THUMBNAIL') {
+        // For images filter: include posts with THUMBNAIL but exclude posts with VIDEO
+        where.assets = {
+          some: {
+            type: 'THUMBNAIL'
+          }
+        }
+        where.NOT = {
+          assets: {
+            some: {
+              type: 'VIDEO'
+            }
+          }
+        }
+      } else {
+        // For other asset types (like VIDEO): simple filter
+        where.assets = {
+          some: {
+            type: assetType as any
+          }
         }
       }
     }
