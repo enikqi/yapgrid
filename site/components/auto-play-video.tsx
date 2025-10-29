@@ -116,7 +116,8 @@ export default function AutoPlayVideo({
   // Find video asset
   const videoAsset = post.assets.find((a) => a.type === "VIDEO");
   const thumbnailAsset = post.assets.find((a) => a.type === "THUMBNAIL");
-  const displayAsset = thumbnailAsset || videoAsset || post.assets[0];
+  // Prioritize video over thumbnail - if there's a video, use it for the player
+  const displayAsset = videoAsset || thumbnailAsset || post.assets[0];
 
   if (!displayAsset) {
     return null;
@@ -595,11 +596,12 @@ export default function AutoPlayVideo({
 
   return (
     <div
+      ref={containerRef}
       className={cn(
         "relative w-full h-full bg-black overflow-hidden",
         className,
       )}
-      onMouseMove={() => {
+      onMouseMove={videoAsset ? () => {
         setShowControls(true);
         if (controlsHideTimerRef.current) {
           clearTimeout(controlsHideTimerRef.current);
@@ -607,14 +609,14 @@ export default function AutoPlayVideo({
         controlsHideTimerRef.current = setTimeout(() => {
           setShowControls(false);
         }, 2000);
-      }}
-      onMouseLeave={() => {
+      } : undefined}
+      onMouseLeave={videoAsset ? () => {
         if (controlsHideTimerRef.current) {
           clearTimeout(controlsHideTimerRef.current);
           controlsHideTimerRef.current = null;
         }
         setShowControls(false);
-      }}
+      } : undefined}
     >
       {videoAsset ? (
         <div className="relative w-full h-full">
@@ -657,7 +659,7 @@ export default function AutoPlayVideo({
           </video>
 
           {!isPlaying && thumbnailAsset?.url && (
-            <div className="absolute inset-0 w-full h-full z-0">
+            <div className="absolute inset-0 w-full h-full z-0 pointer-events-none">
               <img
                 src={thumbnailAsset.url}
                 alt={post.title}
@@ -666,23 +668,33 @@ export default function AutoPlayVideo({
             </div>
           )}
 
-          {(!isPlaying || showPlayButtonOverlay) && (
+          {videoAsset && (!isPlaying || showPlayButtonOverlay) && (
             <div 
               className="absolute inset-0 flex items-center justify-center bg-black/30 z-10 cursor-pointer"
               onClick={(e) => {
                 e.stopPropagation();
                 setShowPlayButtonOverlay(false);
                 setHasUserInteracted(true);
-                if (videoRef.current) {
-                  videoRef.current.muted = false;
-                  videoRef.current.play().catch((err) => {
-                    console.error("Manual play failed:", err);
-                    // Try muted as fallback
-                    if (videoRef.current) {
-                      videoRef.current.muted = true;
-                      videoRef.current.play().catch(console.error);
-                    }
-                  });
+                
+                if (isMobile) {
+                  // Mobile: open modal
+                  onVideoPlay(post);
+                } else {
+                  // Desktop: play inline
+                  if (videoRef.current) {
+                    videoRef.current.muted = false;
+                    videoRef.current.play().catch((err) => {
+                      console.log("Unmuted play failed, trying muted:", err);
+                      // Try muted as fallback
+                      if (videoRef.current) {
+                        videoRef.current.muted = true;
+                        videoRef.current.play().catch((err2) => {
+                          console.error("All play attempts failed:", err2);
+                          setError("Click to play video");
+                        });
+                      }
+                    });
+                  }
                 }
               }}
             >
