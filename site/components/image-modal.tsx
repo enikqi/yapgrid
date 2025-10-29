@@ -58,7 +58,7 @@ export function ImageModal({ isOpen, imageUrl, title, onClose }: ImageModalProps
       {/* Download button */}
       <a
         href={imageUrl}
-        download={`${title.substring(0, 50).replace(/[^a-z0-9]/gi, '-')}.jpg`}
+        download={`${title.substring(0, 50).replace(/[^a-z0-9]/gi, '-')}${imageUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i)?.[0] || '.jpg'}`}
         className="absolute top-4 left-4 p-2 text-white hover:bg-white/10 rounded-full transition-colors z-10"
         onClick={(e) => e.stopPropagation()}
         aria-label="Download image"

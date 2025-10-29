@@ -561,10 +561,8 @@ export function PostCard({ post, onVideoPlay, onPostDelete, showPlayButton = tru
                 className="w-full h-full object-contain cursor-zoom-in hover:opacity-90 transition-opacity"
                 onClick={(e) => {
                   e.stopPropagation()
-                  // Open image in modal only if URL exists
-                  if (displayAsset.url) {
-                    setShowImageModal(true)
-                  }
+                  // Open image in modal
+                  setShowImageModal(true)
                 }}
                 onError={(e) => {
                   // Fallback if image doesn't load
