@@ -1,0 +1,462 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String         @id @default(cuid())
+  email         String?        @unique
+  emailVerified DateTime?
+  image         String?
+  name          String?
+  username      String?        @unique
+  password      String?
+  bio           String?
+  karma         Int            @default(0)
+  isAdmin       Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  accounts      Account[]
+  comments      Comment[]
+  following     Follow[]       @relation("UserFollowing")
+  followers     Follow[]       @relation("UserFollowers")
+  hiddenPosts   HiddenPost[]
+  postHistory   PostHistory[]
+  savedPosts    SavedPost[]
+  sessions      Session[]
+  subscriptions Subscription[]
+  posts         UserPost[]
+  userProfile   UserProfile?
+  votes         Vote[]
+  notifications Notification[]
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model UserPost {
+  id            String          @id @default(cuid())
+  title         String
+  content       String?
+  type          PostType        @default(TEXT)
+  subreddit     String
+  authorId      String
+  score         Int             @default(0)
+  commentsCount Int             @default(0)
+  isNsfw        Boolean         @default(false)
+  isPinned      Boolean         @default(false)
+  isLocked      Boolean         @default(false)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  author        User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  assets        UserPostAsset[]
+  votes         Vote[]
+
+  @@index([subreddit])
+  @@index([authorId])
+  @@index([createdAt])
+}
+
+model UserPostAsset {
+  id          String    @id @default(cuid())
+  postId      String
+  type        AssetType
+  url         String
+  filename    String?
+  filesize    Int?
+  width       Int?
+  height      Int?
+  durationSec Float?
+  createdAt   DateTime  @default(now())
+  post        UserPost  @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+model Comment {
+  id        String    @id @default(cuid())
+  content   String
+  authorId  String
+  postId    String?
+  parentId  String?
+  score     Int       @default(0)
+  isDeleted Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies   Comment[] @relation("CommentReplies")
+  post      Post?     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  votes     Vote[]
+
+  @@index([postId])
+  @@index([parentId])
+  @@index([authorId])
+}
+
+model Vote {
+  id        String    @id @default(cuid())
+  userId    String
+  postId    String?
+  commentId String?
+  type      VoteType
+  createdAt DateTime  @default(now())
+  comment   Comment?  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  post      UserPost? @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@unique([userId, commentId])
+}
+
+model Subscription {
+  id        String   @id @default(cuid())
+  userId    String
+  subreddit String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, subreddit])
+  @@index([subreddit])
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+  following   User     @relation("UserFollowing", fields: [followingId], references: [id], onDelete: Cascade)
+  follower    User     @relation("UserFollowers", fields: [followerId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followingId])
+}
+
+model SavedPost {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+}
+
+model PostHistory {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@index([userId, createdAt])
+}
+
+model Post {
+  id                 String        @id @default(cuid())
+  redditId           String        @unique
+  title              String
+  author             String
+  subreddit          String
+  permalink          String
+  url                String
+  score              Int
+  commentsCount      Int           @default(0)
+  nsfw               Boolean       @default(false)
+  createdUtc         DateTime
+  fetchedAt          DateTime      @default(now())
+  status             PostStatus    @default(NEW)
+  pinId              String?
+  boardId            String?
+  campaignId         String?
+  publishedAt        DateTime?
+  processedAt        DateTime?
+  scheduledPublishAt DateTime?
+  error              String?
+  preview            String?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  assets             Asset[]
+  comments           Comment[]
+  hiddenPosts        HiddenPost[]
+  jobs               Job[]
+  campaign           Campaign?     @relation(fields: [campaignId], references: [id])
+  board              Board?        @relation(fields: [boardId], references: [id])
+  postHistory        PostHistory[]
+  savedPosts         SavedPost[]
+
+  @@index([status])
+  @@index([subreddit])
+  @@index([createdUtc])
+  @@index([campaignId])
+  @@index([processedAt])
+  @@index([scheduledPublishAt])
+  @@index([status, scheduledPublishAt])
+}
+
+model Asset {
+  id          String      @id @default(cuid())
+  postId      String
+  type        AssetType
+  storage     StorageType @default(LOCAL)
+  pathOrKey   String
+  url         String?
+  width       Int?
+  height      Int?
+  durationSec Float?
+  filesize    Int?
+  mimeType    String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  post        Post        @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId, type])
+}
+
+model Job {
+  id          String    @id @default(cuid())
+  type        JobType
+  status      JobStatus @default(PENDING)
+  payload     Json?
+  result      Json?
+  attempts    Int       @default(0)
+  maxAttempts Int       @default(3)
+  error       String?
+  postId      String?
+  startedAt   DateTime?
+  finishedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  post        Post?     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([type, status])
+  @@index([postId])
+}
+
+model Board {
+  id               String   @id @default(cuid())
+  pinterestBoardId String   @unique
+  name             String
+  description      String?
+  isDefault        Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  posts            Post[]
+}
+
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+model Campaign {
+  id              String    @id @default(cuid())
+  name            String
+  subreddits      Json
+  keywords        Json
+  excludeKeywords Json
+  minScore        Int       @default(0)
+  maxScore        Int?
+  sortBy          String    @default("hot")
+  timeRange       String    @default("day")
+  includeNsfw     Boolean   @default(false)
+  postLimit       Int       @default(25)
+  enabled         Boolean   @default(true)
+  lastRun         DateTime?
+  nextRun         DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  posts           Post[]
+  pinterestCampaigns PinterestCampaign[]
+
+  @@index([enabled])
+  @@index([lastRun])
+}
+
+model PinterestCampaign {
+  id                String    @id @default(cuid())
+  name              String
+  campaignId        String
+  sessionId         String
+  boardName         String
+  scheduleInterval  Int       @default(60) // minutes between posts
+  enabled           Boolean   @default(true)
+  lastRun           DateTime?
+  nextRun           DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  campaign          Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  pinterestPosts    PinterestPost[]
+
+  @@index([enabled])
+  @@index([nextRun])
+}
+
+model PinterestPost {
+  id                    String            @id @default(cuid())
+  pinterestCampaignId   String
+  postId                String
+  pinId                 String?
+  title                 String
+  description           String?
+  imageUrl              String
+  link                  String?
+  boardName             String
+  status                PinterestPostStatus @default(PENDING)
+  scheduledAt           DateTime?
+  publishedAt           DateTime?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  pinterestCampaign     PinterestCampaign @relation(fields: [pinterestCampaignId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([scheduledAt])
+  @@index([publishedAt])
+}
+
+enum PinterestPostStatus {
+  PENDING
+  SCHEDULED
+  PUBLISHED
+  FAILED
+}
+
+model HiddenPost {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@index([userId])
+  @@index([postId])
+}
+
+model UserProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  profileData String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // 'comment', 'upvote', 'new_post', 'community_update'
+  title     String
+  message   String
+  link      String?  // URL to related content
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, isRead])
+  @@index([createdAt])
+}
+
+model PostVote {
+  id        String   @id @default(cuid())
+  postId    String
+  userEmail String
+  voteType  String
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userEmail])
+  @@index([postId])
+  @@index([userEmail])
+}
+
+enum PostStatus {
+  NEW
+  DOWNLOADING
+  DOWNLOADED
+  READY
+  PUBLISHING
+  PUBLISHED
+  FAILED
+}
+
+enum AssetType {
+  VIDEO
+  THUMBNAIL
+  AUDIO
+}
+
+enum StorageType {
+  LOCAL
+  S3
+}
+
+enum JobType {
+  INGEST_REDDIT
+  DOWNLOAD_VIDEO
+  TRANSCODE_VIDEO
+  GENERATE_THUMBNAIL
+  PUBLISH_PINTEREST
+  CLEANUP
+}
+
+enum JobStatus {
+  PENDING
+  QUEUED
+  ACTIVE
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum PostType {
+  TEXT
+  LINK
+  IMAGE
+  VIDEO
+  POLL
+}
+
+enum VoteType {
+  UPVOTE
+  DOWNVOTE
+}
