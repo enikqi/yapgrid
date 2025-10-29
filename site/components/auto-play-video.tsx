@@ -49,6 +49,7 @@ export default function AutoPlayVideo({
   const [retryCount, setRetryCount] = useState(0);
   const [showPlayButtonOverlay, setShowPlayButtonOverlay] = useState(false);
   const isMobile = useMobileDetection();
+  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Helper function to get video URL with fallback
   const getVideoUrl = useCallback((url: string | null | undefined): string => {
@@ -446,14 +447,19 @@ export default function AutoPlayVideo({
       // Auto-retry up to 2 times for network errors
       if (error?.code === MediaError.MEDIA_ERR_NETWORK && retryCount < 2) {
         console.log(`Auto-retrying video load (attempt ${retryCount + 1}/2)`);
-        const timeoutId = setTimeout(() => {
+        // Clear any existing timeout
+        if (retryTimeoutRef.current) {
+          clearTimeout(retryTimeoutRef.current);
+        }
+        // Schedule retry
+        retryTimeoutRef.current = setTimeout(() => {
           setRetryCount(retryCount + 1);
-          if (video && !video.paused) {
+          if (video) {
             video.load();
           }
+          retryTimeoutRef.current = null;
         }, 1000);
-        // Store timeout for cleanup
-        return () => clearTimeout(timeoutId);
+        return;
       }
 
       setError(errorMsg);
@@ -462,6 +468,16 @@ export default function AutoPlayVideo({
     },
     [retryCount],
   );
+
+  // Cleanup retry timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+        retryTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   // Format time helper function
   const formatTime = (seconds: number): string => {
