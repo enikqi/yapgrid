@@ -9,6 +9,7 @@ import { useEventTracker } from '@/lib/event-tracker'
 import { formatNumber } from '@/lib/utils'
 import CommentSection from './comment-section'
 import AutoPlayVideo from './auto-play-video'
+import { ImageModal } from './image-modal'
 import type { Post, Asset } from '@/lib/types'
 
 interface PostCardProps {
@@ -32,6 +33,7 @@ export function PostCard({ post, onVideoPlay, onPostDelete, showPlayButton = tru
   const [showComments, setShowComments] = useState(false)
   const [isHiding, setIsHiding] = useState(false)
   const [isHidden, setIsHidden] = useState(false)
+  const [showImageModal, setShowImageModal] = useState(false)
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 })
   const dropdownRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
@@ -556,11 +558,11 @@ export function PostCard({ post, onVideoPlay, onPostDelete, showPlayButton = tru
               <img
                 src={displayAsset.url}
                 alt={post.title}
-                className="w-full h-full object-contain cursor-pointer"
+                className="w-full h-full object-contain cursor-zoom-in hover:opacity-90 transition-opacity"
                 onClick={(e) => {
                   e.stopPropagation()
-                  // Open image in new tab
-                  window.open(displayAsset.url, '_blank')
+                  // Open image in modal
+                  setShowImageModal(true)
                 }}
                 onError={(e) => {
                   // Fallback if image doesn't load
@@ -710,6 +712,16 @@ export function PostCard({ post, onVideoPlay, onPostDelete, showPlayButton = tru
       {/* Comments Section */}
       {showComments && (
         <CommentSection postId={post.id} />
+      )}
+
+      {/* Image Modal */}
+      {displayAsset?.url && (
+        <ImageModal
+          isOpen={showImageModal}
+          imageUrl={displayAsset.url}
+          title={post.title}
+          onClose={() => setShowImageModal(false)}
+        />
       )}
     </div>
   )
