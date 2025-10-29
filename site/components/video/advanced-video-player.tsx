@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, Loader2, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useMobileDetection } from '@/lib/use-mobile-detection'
 
 type VideoPlayerProps = {
   src: string
@@ -35,20 +36,25 @@ export function AdvancedVideoPlayer({
   const containerRef = useRef<HTMLDivElement>(null)
   const controlsRef = useRef<HTMLDivElement>(null)
   const progressBarRef = useRef<HTMLDivElement>(null)
+  
+  // Detect mobile using shared hook
+  const isMobile = useMobileDetection()
+  
+  // Desktop: default unmuted with 0.5 volume, Mobile: muted
   const [isPlaying, setIsPlaying] = useState(autoPlay)
-  const [isMuted, setIsMuted] = useState(muted)
-  const [volume, setVolume] = useState(muted ? 0 : 0.5)
+  const [isMuted, setIsMuted] = useState(isMobile ? true : muted)
+  const [volume, setVolume] = useState(isMobile ? 0 : (muted ? 0 : 0.5))
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
   const [showControls, setShowControls] = useState(true)
-  const [isMobile, setIsMobile] = useState(false)
   const [isDraggingProgress, setIsDraggingProgress] = useState(false)
   const [wasPlayingBeforeDrag, setWasPlayingBeforeDrag] = useState(false)
   const [showVolumeControl, setShowVolumeControl] = useState(false)
   const [lastTap, setLastTap] = useState(0)
+  const [isHovered, setIsHovered] = useState(false)
   const doubleTapTimeout = useRef<NodeJS.Timeout>()
   const hideControlsTimeout = useRef<NodeJS.Timeout>()
 
@@ -250,11 +256,6 @@ export function AdvancedVideoPlayer({
       onEnded?.()
     }
     
-    // Detect mobile
-    const userAgent = typeof window.navigator === 'undefined' ? '' : navigator.userAgent
-    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent)
-    setIsMobile(isMobileDevice)
-    
     // Add event listeners
     videoElement.addEventListener('loadeddata', handleLoadedData)
     videoElement.addEventListener('error', handleError)
@@ -345,32 +346,48 @@ export function AdvancedVideoPlayer({
     if (!controls) return
     
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!videoRef.current) return
+      if (!videoRef.current || !containerRef.current) return
       
-      // Only handle keyboard shortcuts when video is focused or in fullscreen
-      if (document.activeElement !== videoRef.current && !document.fullscreenElement) return
+      // Check if container or video is focused/hovered or if we're in fullscreen
+      const isVideoFocused = document.activeElement === videoRef.current || 
+                             document.activeElement === containerRef.current
+      const isInFullscreen = !!document.fullscreenElement
+      
+      // Only handle shortcuts if video is focused, hovered, or in fullscreen
+      if (!isVideoFocused && !isInFullscreen && !isHovered) return
+      
+      // Don't handle if user is typing in an input
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+      
+      let handled = false
       
       switch (e.key.toLowerCase()) {
         case ' ':
         case 'k':
           e.preventDefault()
           togglePlayPause()
+          handled = true
           break
           
         case 'm':
           e.preventDefault()
           toggleMute()
+          handled = true
           break
           
         case 'f':
           e.preventDefault()
           toggleFullscreen()
+          handled = true
           break
           
         case 'arrowleft':
         case 'j':
           e.preventDefault()
           videoRef.current.currentTime = Math.max(0, videoRef.current.currentTime - 5)
+          handled = true
+          // Show controls briefly to give visual feedback
+          setShowControls(true)
           break
           
         case 'arrowright':
@@ -380,6 +397,39 @@ export function AdvancedVideoPlayer({
             videoRef.current.duration,
             videoRef.current.currentTime + 5
           )
+          handled = true
+          // Show controls briefly to give visual feedback
+          setShowControls(true)
+          break
+          
+        case 'arrowup':
+          e.preventDefault()
+          // Increase volume by 10%
+          if (videoRef.current) {
+            const newVolume = Math.min(1, videoRef.current.volume + 0.1)
+            videoRef.current.volume = newVolume
+            videoRef.current.muted = false
+            setVolume(newVolume)
+            setIsMuted(false)
+            setShowVolumeControl(true)
+            setTimeout(() => setShowVolumeControl(false), 1500)
+          }
+          handled = true
+          break
+          
+        case 'arrowdown':
+          e.preventDefault()
+          // Decrease volume by 10%
+          if (videoRef.current) {
+            const newVolume = Math.max(0, videoRef.current.volume - 0.1)
+            videoRef.current.volume = newVolume
+            setVolume(newVolume)
+            setIsMuted(newVolume === 0)
+            videoRef.current.muted = newVolume === 0
+            setShowVolumeControl(true)
+            setTimeout(() => setShowVolumeControl(false), 1500)
+          }
+          handled = true
           break
           
         case '0':
@@ -395,7 +445,21 @@ export function AdvancedVideoPlayer({
           e.preventDefault()
           const percent = parseInt(e.key) / 10
           videoRef.current.currentTime = videoRef.current.duration * percent
+          handled = true
+          // Show controls briefly to give visual feedback
+          setShowControls(true)
           break
+      }
+      
+      // If we handled a shortcut, show controls briefly
+      if (handled) {
+        setShowControls(true)
+        clearTimeout(hideControlsTimeout.current)
+        hideControlsTimeout.current = setTimeout(() => {
+          if (isPlaying) {
+            setShowControls(false)
+          }
+        }, 2000)
       }
     }
     
@@ -403,7 +467,24 @@ export function AdvancedVideoPlayer({
     return () => {
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [controls, togglePlayPause, toggleMute, toggleFullscreen])
+  }, [controls, togglePlayPause, toggleMute, toggleFullscreen, isPlaying, isHovered])
+  
+  // Track hover state efficiently
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
+    
+    const handleMouseEnter = () => setIsHovered(true)
+    const handleMouseLeave = () => setIsHovered(false)
+    
+    container.addEventListener('mouseenter', handleMouseEnter)
+    container.addEventListener('mouseleave', handleMouseLeave)
+    
+    return () => {
+      container.removeEventListener('mouseenter', handleMouseEnter)
+      container.removeEventListener('mouseleave', handleMouseLeave)
+    }
+  }, [])
 
   return (
     <div 
@@ -441,17 +522,25 @@ export function AdvancedVideoPlayer({
       {/* Video element */}
       <video
         ref={videoRef}
-        className="w-full h-full object-contain"
+        className="w-full h-full object-contain cursor-pointer"
         src={src}
         poster={poster}
         controls={false}
         loop={loop}
-        playsInline
-        webkit-playsinline="true"
-        x5-playsinline="true"
-        preload="auto"
+        playsInline={isMobile}
+        preload="metadata"
         disablePictureInPicture
-        onClick={handleVideoTap}
+        onClick={(e) => {
+          e.stopPropagation()
+          // Desktop: single click to play/pause
+          if (!isMobile) {
+            togglePlayPause()
+          } else {
+            // Mobile: handle double-tap
+            handleVideoTap(e)
+          }
+        }}
+        tabIndex={0}
         style={{
           WebkitTapHighlightColor: 'transparent',
           touchAction: 'manipulation',
@@ -462,11 +551,11 @@ export function AdvancedVideoPlayer({
       {/* Play/Pause overlay (visible when not playing) */}
       {!isPlaying && !isLoading && !error && (
         <div 
-          className="absolute inset-0 flex items-center justify-center bg-black/30 z-10 cursor-pointer"
+          className="absolute inset-0 flex items-center justify-center bg-black/20 z-10 cursor-pointer transition-opacity hover:bg-black/30"
           onClick={togglePlayPause}
         >
-          <div className="w-16 h-16 bg-black/50 rounded-full flex items-center justify-center">
-            <Play className="w-8 h-8 text-white ml-1" />
+          <div className="w-20 h-20 bg-white/30 hover:bg-white/40 rounded-full flex items-center justify-center backdrop-blur-sm transition-all hover:scale-110">
+            <Play className="w-10 h-10 text-white ml-1" fill="white" />
           </div>
         </div>
       )}
@@ -495,13 +584,15 @@ export function AdvancedVideoPlayer({
         <div 
           ref={controlsRef}
           className={cn(
-            'absolute inset-0 transition-opacity duration-300 z-10',
-            showControls ? 'opacity-100' : 'opacity-0 hover:opacity-100',
+            'absolute inset-0 transition-opacity duration-300 z-10 pointer-events-none',
+            showControls ? 'opacity-100' : 'opacity-0',
+            // Always show controls on hover for desktop
+            !isMobile && 'hover:opacity-100',
             isDraggingProgress && 'opacity-100' // Keep controls visible while dragging progress
           )}
         >
           {/* Bottom controls */}
-          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent pointer-events-auto">
             {/* Progress bar */}
             <div 
               ref={progressBarRef}
@@ -522,18 +613,18 @@ export function AdvancedVideoPlayer({
                 {/* Play/Pause button */}
                 <button
                   onClick={togglePlayPause}
-                  className="text-white hover:text-gray-300 transition-colors p-1"
+                  className="text-white hover:text-gray-300 hover:scale-110 transition-all p-1"
                   aria-label={isPlaying ? 'Pause' : 'Play'}
                 >
                   {isPlaying ? (
-                    <Pause size={24} />
+                    <Pause size={isMobile ? 24 : 28} />
                   ) : (
-                    <Play size={24} className="ml-0.5" />
+                    <Play size={isMobile ? 24 : 28} className="ml-0.5" />
                   )}
                 </button>
                 
                 {/* Volume control */}
-                <div className="flex items-center space-x-1">
+                <div className="flex items-center space-x-2 group">
                   <button
                     onClick={toggleMute}
                     className="text-white hover:text-gray-300 transition-colors p-1"
@@ -546,18 +637,21 @@ export function AdvancedVideoPlayer({
                     )}
                   </button>
                   
-                  <div className="w-20">
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.01"
-                      value={isMuted ? 0 : volume}
-                      onChange={handleVolumeChange}
-                      className="w-full h-1 accent-white"
-                      aria-label="Volume"
-                    />
-                  </div>
+                  {/* Desktop: Show volume slider always, Mobile: hide */}
+                  {!isMobile && (
+                    <div className="w-20 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.01"
+                        value={isMuted ? 0 : volume}
+                        onChange={handleVolumeChange}
+                        className="w-full h-1 accent-white cursor-pointer"
+                        aria-label="Volume"
+                      />
+                    </div>
+                  )}
                 </div>
                 
                 {/* Current time / duration */}
