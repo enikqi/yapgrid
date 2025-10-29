@@ -449,9 +449,12 @@ export function PostCard({ post, onVideoPlay, onPostDelete, showPlayButton = tru
   const thumbnailAsset = post.assets.find(a => a.type === 'THUMBNAIL')
   const primaryAsset = videoAsset || thumbnailAsset || post.assets[0]
   
-  // For display, use thumbnail if available, otherwise use primary asset
-  // This ensures videos show thumbnails when available, but fall back to video file if needed
-  const displayAsset = thumbnailAsset || primaryAsset
+  // Determine if this post has a video
+  const hasVideo = !!videoAsset
+  
+  // For display: if has video, use video (AutoPlayVideo will handle thumbnail)
+  // If no video, use thumbnail or first asset
+  const displayAsset = hasVideo ? videoAsset : (thumbnailAsset || post.assets[0])
 
   // Memoize date formatting to avoid hydration errors
   const formatDateTitle = (date: Date | string | number) => {
@@ -527,7 +530,7 @@ export function PostCard({ post, onVideoPlay, onPostDelete, showPlayButton = tru
       </div>
 
       {/* Media Content */}
-      {displayAsset && (
+      {post.assets.length > 0 && (
         <div
           className="relative w-full bg-black"
           style={{
@@ -537,14 +540,36 @@ export function PostCard({ post, onVideoPlay, onPostDelete, showPlayButton = tru
                 : '16/9',
           }}
         >
-          <div className="absolute inset-0">
-            <AutoPlayVideo
-              post={post}
-              onVideoPlay={onVideoPlay || (() => {})}
-              showPlayButton={showPlayButton}
-              className="w-full h-full"
-            />
-          </div>
+          {hasVideo ? (
+            // Render video player for posts with video assets
+            <div className="absolute inset-0">
+              <AutoPlayVideo
+                post={post}
+                onVideoPlay={onVideoPlay || (() => {})}
+                showPlayButton={showPlayButton}
+                className="w-full h-full"
+              />
+            </div>
+          ) : displayAsset?.url ? (
+            // Render simple image for posts with only images
+            <div className="absolute inset-0">
+              <img
+                src={displayAsset.url}
+                alt={post.title}
+                className="w-full h-full object-contain cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  // Open image in new tab
+                  window.open(displayAsset.url, '_blank')
+                }}
+                onError={(e) => {
+                  // Fallback if image doesn't load
+                  console.error('Image failed to load:', displayAsset.url)
+                }}
+                loading="lazy"
+              />
+            </div>
+          ) : null}
         </div>
       )}
 

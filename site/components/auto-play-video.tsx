@@ -425,16 +425,16 @@ export default function AutoPlayVideo({
       if (error) {
         switch (error.code) {
           case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
-            errorMsg = "Video format not supported by your browser";
+            errorMsg = "Video format not supported. Please try a different browser.";
             break;
           case MediaError.MEDIA_ERR_NETWORK:
-            errorMsg = "Network error loading video. Check your connection.";
+            errorMsg = "Network error. Please check your connection.";
             break;
           case MediaError.MEDIA_ERR_DECODE:
             errorMsg = "Error decoding video. The file may be corrupted.";
             break;
           case MediaError.MEDIA_ERR_ABORTED:
-            errorMsg = "Video playback was interrupted";
+            errorMsg = "Video playback aborted.";
             break;
         }
         console.error("Video error details:", {
@@ -668,7 +668,7 @@ export default function AutoPlayVideo({
 
           {(!isPlaying || showPlayButtonOverlay) && (
             <div 
-              className="absolute inset-0 flex items-center justify-center z-10 cursor-pointer"
+              className="absolute inset-0 flex items-center justify-center bg-black/30 z-10 cursor-pointer"
               onClick={(e) => {
                 e.stopPropagation();
                 setShowPlayButtonOverlay(false);
@@ -686,8 +686,10 @@ export default function AutoPlayVideo({
                 }
               }}
             >
-              <div className="w-20 h-20 bg-white/30 hover:bg-white/40 rounded-full flex items-center justify-center backdrop-blur-sm transition-all">
-                <Play className="w-10 h-10 text-white ml-1" fill="white" />
+              <div className="group-hover:scale-110 transition-transform duration-200">
+                <div className="w-20 h-20 bg-orange-500 rounded-full flex items-center justify-center shadow-2xl hover:bg-orange-600 transition-colors">
+                  <Play className="w-10 h-10 text-white ml-1" fill="white" />
+                </div>
               </div>
             </div>
           )}
