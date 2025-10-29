@@ -42,6 +42,9 @@ export function ImageModal({ isOpen, imageUrl, title, onClose }: ImageModalProps
     <div 
       className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center p-4"
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="image-modal-title"
     >
       {/* Close button */}
       <button
@@ -55,9 +58,7 @@ export function ImageModal({ isOpen, imageUrl, title, onClose }: ImageModalProps
       {/* Download button */}
       <a
         href={imageUrl}
-        download
-        target="_blank"
-        rel="noopener noreferrer"
+        download={`${title.substring(0, 50).replace(/[^a-z0-9]/gi, '-')}.jpg`}
         className="absolute top-4 left-4 p-2 text-white hover:bg-white/10 rounded-full transition-colors z-10"
         onClick={(e) => e.stopPropagation()}
         aria-label="Download image"
@@ -76,7 +77,7 @@ export function ImageModal({ isOpen, imageUrl, title, onClose }: ImageModalProps
       {/* Title */}
       {title && (
         <div className="absolute bottom-4 left-4 right-4 text-white text-center">
-          <p className="text-sm font-medium">{title}</p>
+          <p id="image-modal-title" className="text-sm font-medium">{title}</p>
         </div>
       )}
     </div>
