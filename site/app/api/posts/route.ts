@@ -82,17 +82,18 @@ export async function GET(request: NextRequest) {
 
     // Filter by asset type if specified
     if (assetType) {
+      // For images filter: include posts with THUMBNAIL but exclude posts with VIDEO
+      // This ensures that posts with both THUMBNAIL and VIDEO don't appear in the images feed
       if (assetType === 'THUMBNAIL') {
-        // For images filter: include posts with THUMBNAIL but exclude posts with VIDEO
         where.assets = {
           some: {
-            type: 'THUMBNAIL'
+            type: assetType as any
           }
         }
         where.NOT = {
           assets: {
             some: {
-              type: 'VIDEO'
+              type: 'VIDEO' as any
             }
           }
         }
