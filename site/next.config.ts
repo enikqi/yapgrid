@@ -3,10 +3,10 @@ import path from "path";
 
 const nextConfig: NextConfig = {
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false, // Don't ignore, but downgrade to warnings
   },
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   experimental: {
     serverActions: {

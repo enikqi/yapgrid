@@ -240,6 +240,66 @@ chmod +x scripts/deploy.sh
 ./scripts/deploy.sh
 ```
 
+## Deployment
+
+### Automated Deployment
+
+```bash
+cd ~/apps/yapgrid
+git pull origin main
+cd site
+./scripts/deploy.sh
+```
+
+### Manual Steps (if needed)
+
+1. Sync database:
+```bash
+npx prisma db push --accept-data-loss
+npx prisma generate
+```
+
+2. Build:
+```bash
+rm -rf .next
+npm run build
+```
+
+3. Initialize settings:
+```bash
+node scripts/init-job-settings.js
+```
+
+4. Restart services:
+```bash
+pm2 delete all
+pm2 start ecosystem.config.js
+pm2 save
+```
+
+### Verify Deployment
+
+```bash
+pm2 status
+pm2 logs yapgrid-nextjs --lines 20
+curl -I http://localhost:3002
+```
+
+### Troubleshooting
+
+**Site returns 502:**
+- Check PM2 status: `pm2 status`
+- Check logs: `pm2 logs yapgrid-nextjs --err`
+- Verify BUILD_ID exists: `ls -la .next/BUILD_ID`
+
+**Database errors:**
+- Sync schema: `npx prisma db push`
+- Check database: `ls -la prisma/*.db`
+
+**Build fails:**
+- Check build log: `npm run build 2>&1 | tee build.log`
+- Review ESLint errors in build.log
+
 ## Monitoring
 
 ### PM2 Monitoring
