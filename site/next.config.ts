@@ -11,10 +11,10 @@ const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
       bodySizeLimit: '10mb',
-      // Environment-specific allowed origins for security
+      // Environment-specific allowed origins for security (with full URLs)
       allowedOrigins: process.env.NODE_ENV === 'production' 
-        ? ['yapgrid.com', 'www.yapgrid.com']
-        : ['localhost:3002'],
+        ? ['https://yapgrid.com', 'https://www.yapgrid.com']
+        : ['http://localhost:3002'],
     },
     // Optimize server-side rendering performance
     optimizePackageImports: ['lucide-react'],
@@ -72,11 +72,6 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: false, // Disable for faster dev builds
   swcMinify: true,
-  // HTTP configuration
-  httpAgentOptions: {
-    keepAlive: true,
-    keepAliveMsecs: 60000, // Keep connections alive for 60 seconds
-  },
 };
 
 export default nextConfig;

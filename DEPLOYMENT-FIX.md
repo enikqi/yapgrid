@@ -40,8 +40,9 @@ Added performance optimizations:
 
 - **Server Components External Packages**: Added `prisma`, `@prisma/client`, and `selenium-webdriver` to prevent bundling issues
 - **Optimized Package Imports**: Added `lucide-react` to reduce bundle size
-- **HTTP Keep-Alive**: Enabled with 60-second keep-alive for better connection management
-- **Allowed Origins**: Strict environment-specific allowed origins (production: yapgrid.com only, development: localhost only)
+- **Allowed Origins**: Strict environment-specific allowed origins with full URLs:
+  - Production: https://yapgrid.com and https://www.yapgrid.com
+  - Development: http://localhost:3002
 
 ## Deployment Steps
 
