@@ -11,15 +11,15 @@ const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
       bodySizeLimit: '10mb',
-      // Only allow localhost in development, production origins in production
+      // Environment-specific allowed origins for security
       allowedOrigins: process.env.NODE_ENV === 'production' 
         ? ['yapgrid.com', 'www.yapgrid.com']
-        : ['yapgrid.com', 'www.yapgrid.com', 'localhost:3002'],
+        : ['localhost:3002'],
     },
     // Optimize server-side rendering performance
     optimizePackageImports: ['lucide-react'],
   },
-  // Increase timeout for API routes and pages
+  // Prevent bundling of heavy server-only packages
   serverComponentsExternalPackages: ['prisma', '@prisma/client', 'selenium-webdriver'],
   images: {
     remotePatterns: [
