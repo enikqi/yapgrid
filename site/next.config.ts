@@ -11,8 +11,17 @@ const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
       bodySizeLimit: '10mb',
+      // Environment-specific allowed origins for security (with full URLs)
+      allowedOrigins: process.env.NODE_ENV === 'production' 
+        ? ['https://yapgrid.com', 'https://www.yapgrid.com']
+        : ['http://localhost:3002'],
     },
+    // Optimize server-side rendering performance
+    optimizePackageImports: ['lucide-react'],
   },
+  // Prevent bundling of heavy server-only packages
+  // Note: selenium-webdriver is already excluded in webpack config for client builds
+  serverComponentsExternalPackages: ['prisma', '@prisma/client'],
   images: {
     remotePatterns: [
       {
