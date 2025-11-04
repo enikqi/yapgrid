@@ -5,8 +5,28 @@ const prisma = new PrismaClient();
 
 console.log('🚀 Starting background job scheduler...');
 
-// Auto-processing cron job (runs every 30 seconds to process NEW posts)
-cron.schedule('*/30 * * * * *', async () => {
+// Auto-processing cron job (runs every 2 minutes to process NEW posts)
+// Reduced from 30 seconds to prevent CPU spikes and missed executions
+let isProcessing = false;
+const MAX_CONCURRENT_POSTS = 5;
+const PROCESSING_TIMEOUT = 5 * 60 * 1000; // 5 minutes
+
+cron.schedule('*/2 * * * *', async () => {
+  // Prevent concurrent executions
+  if (isProcessing) {
+    console.log('⏭️  Auto-processing already running, skipping...');
+    return;
+  }
+
+  isProcessing = true;
+  const startTime = Date.now();
+  
+  // Set timeout to prevent stuck processing
+  const timeoutId = setTimeout(() => {
+    console.log('⚠️  Auto-processing timeout reached, forcing reset');
+    isProcessing = false;
+  }, PROCESSING_TIMEOUT);
+
   try {
     console.log('⏰ Auto-processing cron job running...');
     
@@ -26,7 +46,7 @@ cron.schedule('*/30 * * * * *', async () => {
     const config = {
       enabled: false,
       delaySeconds: 10,
-      batchSize: 1
+      batchSize: Math.min(MAX_CONCURRENT_POSTS, 1) // Limit to max concurrent
     };
 
     settings.forEach(setting => {
@@ -38,7 +58,7 @@ cron.schedule('*/30 * * * * *', async () => {
           config.delaySeconds = parseInt(setting.value);
           break;
         case 'auto_processing_batch_size':
-          config.batchSize = parseInt(setting.value);
+          config.batchSize = Math.min(parseInt(setting.value), MAX_CONCURRENT_POSTS);
           break;
       }
     });
@@ -94,8 +114,15 @@ cron.schedule('*/30 * * * * *', async () => {
         console.log(`❌ Error processing post: ${error.message}`);
       }
     }
+
+    const duration = Date.now() - startTime;
+    console.log(`✅ Auto-processing completed in ${duration}ms`);
   } catch (error) {
     console.log(`❌ Auto-processing error: ${error.message}`);
+    console.error(error);
+  } finally {
+    clearTimeout(timeoutId);
+    isProcessing = false;
   }
 });
 
@@ -209,11 +236,35 @@ cron.schedule('*/30 * * * *', async () => {
   }
 });
 
+// Cleanup cron job (runs every hour)
+cron.schedule('0 * * * *', async () => {
+  try {
+    console.log('⏰ Cleanup cron job running...');
+    
+    // Call the cleanup API endpoint
+    const response = await fetch(`http://localhost:3002/api/admin/cleanup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    const result = await response.json();
+    
+    if (result.success) {
+      console.log('✅ Cleanup completed:', result.data);
+    } else {
+      console.log('❌ Cleanup failed:', result.error);
+    }
+  } catch (error) {
+    console.log(`❌ Cleanup error: ${error.message}`);
+  }
+});
+
 console.log('✅ Background job scheduler started successfully!');
 console.log('📊 Cron jobs scheduled:');
-console.log('  - Auto-processing: Every 30 seconds');
+console.log('  - Auto-processing: Every 2 minutes');
 console.log('  - Auto-publish: Every minute');
 console.log('  - Auto-fetch: Every 30 minutes');
+console.log('  - Cleanup: Every hour');
 
 // Keep the process running
 process.on('SIGINT', async () => {

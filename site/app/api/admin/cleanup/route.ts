@@ -73,50 +73,31 @@ export async function GET() {
 // POST /api/admin/cleanup - Perform cleanup operations
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
+    const body = await request.json().catch(() => ({}))
     const { 
-      cleanupFailedPosts = false,
+      cleanupFailedPosts = true,
       cleanupOldPosts = false,
       cleanupCompletedJobs = false,
-      cleanupMedia = false,
+      cleanupMedia = true,
       olderThanDays = 30
     } = body
 
+    // Use the new cleanup service for automatic cleanup
+    const { cleanupService } = await import('@/lib/cleanup')
+    const cleanupResults = await cleanupService.runAllCleanup()
+
     const results = {
-      failedPostsDeleted: 0,
+      failedPostsDeleted: cleanupResults.failedPosts,
       oldPostsDeleted: 0,
       completedJobsDeleted: 0,
-      mediaFilesDeleted: 0,
-      mediaSizeFreed: 0
+      mediaFilesDeleted: cleanupResults.orphanedMedia,
+      mediaSizeFreed: 0,
+      cookieFilesDeleted: cleanupResults.cookieFiles,
+      tempFilesDeleted: cleanupResults.tempFiles,
+      stuckPostsReset: cleanupResults.stuckPosts,
     }
 
-    // Cleanup failed posts
-    if (cleanupFailedPosts) {
-      const failedPosts = await prisma.post.findMany({
-        where: { status: 'FAILED' },
-        select: { id: true, assets: { select: { pathOrKey: true } } }
-      })
-
-      for (const post of failedPosts) {
-        // Delete associated assets
-        for (const asset of post.assets) {
-          try {
-            const assetPath = path.join(process.cwd(), 'media', asset.pathOrKey)
-            await fs.unlink(assetPath)
-            results.mediaFilesDeleted++
-          } catch (error) {
-            logger.warn(`Could not delete asset ${asset.pathOrKey}:`, error)
-          }
-        }
-      }
-
-      const deleteResult = await prisma.post.deleteMany({
-        where: { status: 'FAILED' }
-      })
-      results.failedPostsDeleted = deleteResult.count
-    }
-
-    // Cleanup old posts
+    // Additional cleanup if requested
     if (cleanupOldPosts) {
       const cutoffDate = new Date(Date.now() - olderThanDays * 24 * 60 * 60 * 1000)
       
@@ -163,36 +144,6 @@ export async function POST(request: NextRequest) {
         }
       })
       results.completedJobsDeleted = deleteResult.count
-    }
-
-    // Cleanup orphaned media files
-    if (cleanupMedia) {
-      try {
-        const mediaPath = path.join(process.cwd(), 'media')
-        const files = await fs.readdir(mediaPath, { withFileTypes: true })
-        
-        // Get all asset paths from database
-        const assets = await prisma.asset.findMany({
-          select: { pathOrKey: true }
-        })
-        const assetPaths = new Set(assets.map(asset => asset.pathOrKey))
-
-        for (const file of files) {
-          if (file.isFile() && !assetPaths.has(file.name)) {
-            try {
-              const filePath = path.join(mediaPath, file.name)
-              const stats = await fs.stat(filePath)
-              results.mediaSizeFreed += stats.size
-              await fs.unlink(filePath)
-              results.mediaFilesDeleted++
-            } catch (error) {
-              logger.warn(`Could not delete orphaned file ${file.name}:`, error)
-            }
-          }
-        }
-      } catch (error) {
-        logger.warn('Could not cleanup orphaned media files:', error)
-      }
     }
 
     logger.info({ results }, 'Database cleanup completed')

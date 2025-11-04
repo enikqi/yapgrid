@@ -11,6 +11,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { batchSize = 5, intervalMinutes = 30 } = body
 
+    // Limit batch size to prevent memory issues (max 10)
+    const safeBatchSize = Math.min(10, Math.max(1, batchSize))
+
     // Get NEW posts (regardless of processedAt - some might be partially processed)
     const newPosts = await prisma.post.findMany({
       where: {
@@ -19,7 +22,7 @@ export async function POST(request: NextRequest) {
       orderBy: {
         createdUtc: 'asc',
       },
-      take: batchSize,
+      take: safeBatchSize,
     })
 
     if (newPosts.length === 0) {
