@@ -3,7 +3,7 @@ import path from "path";
 
 const nextConfig: NextConfig = {
   eslint: {
-    ignoreDuringBuilds: false, // Don't ignore, but downgrade to warnings
+    ignoreDuringBuilds: false, // Enable ESLint during builds (rules configured in .eslintrc.json)
   },
   typescript: {
     ignoreBuildErrors: false,

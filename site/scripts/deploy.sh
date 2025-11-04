@@ -8,6 +8,8 @@ echo "📛 Stopping PM2 processes..."
 pm2 stop all || true
 
 # Sync database schema
+# Note: --accept-data-loss is required for SQLite schema changes
+# Ensure you have database backups before running this in production
 echo "🔄 Syncing database schema..."
 npx prisma db push --accept-data-loss --skip-generate
 
@@ -37,7 +39,8 @@ node scripts/init-job-settings.js
 
 # Restart PM2
 echo "🔄 Restarting PM2..."
-pm2 delete all || true
+pm2 delete yapgrid-nextjs || true
+pm2 delete background-scheduler || true
 pm2 start ecosystem.config.js
 pm2 save
 
