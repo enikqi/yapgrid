@@ -16,6 +16,22 @@ module.exports = {
       error_file: '/home/ubuntu/apps/yapgrid/logs/web-error.log',
       out_file: '/home/ubuntu/apps/yapgrid/logs/web-out.log',
       time: true
+    },
+    {
+      name: 'background-scheduler',
+      script: 'background-scheduler.js',
+      cwd: '/home/ubuntu/apps/yapgrid/site',
+      instances: 1,
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '500M',
+      env: {
+        NODE_ENV: 'production',
+        PORT: 3002
+      },
+      error_file: '/home/ubuntu/apps/yapgrid/logs/scheduler-error.log',
+      out_file: '/home/ubuntu/apps/yapgrid/logs/scheduler-out.log',
+      time: true
     }
   ]
 }

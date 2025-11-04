@@ -1,41 +1,51 @@
 #!/bin/bash
-
-# PinReddit Deployment Script
-
 set -e
 
-echo "🚀 Starting PinReddit deployment..."
+echo "🚀 Starting deployment..."
 
-# Load environment variables
-if [ -f .env ]; then
-    export $(cat .env | grep -v '^#' | xargs)
-fi
+# Stop all PM2 processes
+echo "📛 Stopping PM2 processes..."
+pm2 stop all || true
 
-# Build the application
-echo "📦 Building application..."
+# Sync database schema
+# Note: --accept-data-loss is required for SQLite schema changes
+# Ensure you have database backups before running this in production
+echo "🔄 Syncing database schema..."
+npx prisma db push --accept-data-loss --skip-generate
+
+# Regenerate Prisma client
+echo "🔧 Generating Prisma client..."
+npx prisma generate
+
+# Clean build
+echo "🧹 Cleaning old build..."
+rm -rf .next
+
+# Build application
+echo "🔨 Building application..."
 npm run build
 
-# Run database migrations
-echo "🗄️ Running database migrations..."
-npm run db:push
+# Verify BUILD_ID exists
+if [ ! -f ".next/BUILD_ID" ]; then
+    echo "❌ BUILD_ID not found! Build failed!"
+    exit 1
+fi
 
-# Create necessary directories
-echo "📁 Creating directories..."
-mkdir -p logs media temp
+echo "✅ BUILD_ID created successfully"
 
-# Set proper permissions
-chmod -R 755 media
-chmod -R 755 temp
-chmod -R 755 logs
+# Initialize job settings
+echo "⚙️ Initializing job settings..."
+node scripts/init-job-settings.js
 
-# Restart applications with PM2
-echo "🔄 Restarting applications..."
-pm2 restart ecosystem.config.js --update-env
+# Restart PM2
+echo "🔄 Restarting PM2..."
+pm2 delete yapgrid-nextjs || true
+pm2 delete background-scheduler || true
+pm2 start ecosystem.config.js
+pm2 save
 
 # Show status
-echo "✅ Deployment complete!"
+echo "📊 PM2 Status:"
 pm2 status
 
-echo "📊 Logs available at:"
-echo "  - Web: pm2 logs pinreddit-web"
-echo "  - Worker: pm2 logs pinreddit-worker"
+echo "✅ Deployment complete!"

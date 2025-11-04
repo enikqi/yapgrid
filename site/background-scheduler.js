@@ -5,8 +5,8 @@ const prisma = new PrismaClient();
 
 console.log('🚀 Starting background job scheduler...');
 
-// Auto-processing cron job (runs every 30 seconds to process NEW posts)
-cron.schedule('*/30 * * * * *', async () => {
+// Auto-processing cron job (runs every 2 minutes to process NEW posts)
+cron.schedule('*/2 * * * *', async () => {
   try {
     console.log('⏰ Auto-processing cron job running...');
     
@@ -211,7 +211,7 @@ cron.schedule('*/30 * * * *', async () => {
 
 console.log('✅ Background job scheduler started successfully!');
 console.log('📊 Cron jobs scheduled:');
-console.log('  - Auto-processing: Every 30 seconds');
+console.log('  - Auto-processing: Every 2 minutes');
 console.log('  - Auto-publish: Every minute');
 console.log('  - Auto-fetch: Every 30 minutes');
 
