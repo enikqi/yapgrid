@@ -38,7 +38,7 @@ Updated timeout and buffer settings:
 ### 2. Next.js Configuration (`site/next.config.ts`)
 Added performance optimizations:
 
-- **Server Components External Packages**: Added `prisma`, `@prisma/client`, and `selenium-webdriver` to prevent bundling issues
+- **Server Components External Packages**: Added `prisma` and `@prisma/client` to prevent bundling issues
 - **Optimized Package Imports**: Added `lucide-react` to reduce bundle size
 - **Allowed Origins**: Strict environment-specific allowed origins with full URLs:
   - Production: https://yapgrid.com and https://www.yapgrid.com
