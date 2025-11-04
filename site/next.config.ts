@@ -20,7 +20,8 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ['lucide-react'],
   },
   // Prevent bundling of heavy server-only packages
-  serverComponentsExternalPackages: ['prisma', '@prisma/client', 'selenium-webdriver'],
+  // Note: selenium-webdriver is already excluded in webpack config for client builds
+  serverComponentsExternalPackages: ['prisma', '@prisma/client'],
   images: {
     remotePatterns: [
       {

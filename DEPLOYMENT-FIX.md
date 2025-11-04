@@ -114,13 +114,14 @@ pm2 restart yapgrid-nextjs
 ## Additional Performance Recommendations
 
 ### For future optimization:
-1. **Add caching** for frequently accessed API endpoints
-2. **Implement pagination** with smaller page sizes (current: 15 items)
-3. **Add database indexes** on frequently queried fields
-4. **Consider Redis caching** for API responses
-5. **Add rate limiting** to prevent abuse
-6. **Implement API route segments** for better caching strategies
-7. **Use incremental static regeneration (ISR)** for semi-static pages
+1. **Refactor nginx configuration**: Extract common proxy headers to a separate include file (e.g., `proxy_headers.conf`) to reduce duplication and improve maintainability
+2. **Add caching** for frequently accessed API endpoints
+3. **Implement pagination** with smaller page sizes (current: 15 items)
+4. **Add database indexes** on frequently queried fields
+5. **Consider Redis caching** for API responses
+6. **Add rate limiting** to prevent abuse
+7. **Implement API route segments** for better caching strategies
+8. **Use incremental static regeneration (ISR)** for semi-static pages
 
 ## Testing Checklist
 - [ ] Homepage loads without timeout
