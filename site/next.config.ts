@@ -11,8 +11,13 @@ const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
       bodySizeLimit: '10mb',
+      allowedOrigins: ['yapgrid.com', 'www.yapgrid.com', 'localhost:3002'],
     },
+    // Optimize server-side rendering performance
+    optimizePackageImports: ['lucide-react'],
   },
+  // Increase timeout for API routes and pages
+  serverComponentsExternalPackages: ['prisma', '@prisma/client', 'selenium-webdriver'],
   images: {
     remotePatterns: [
       {
@@ -64,6 +69,11 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: false, // Disable for faster dev builds
   swcMinify: true,
+  // HTTP configuration
+  httpAgentOptions: {
+    keepAlive: true,
+    keepAliveMsecs: 60000, // Keep connections alive for 60 seconds
+  },
 };
 
 export default nextConfig;
