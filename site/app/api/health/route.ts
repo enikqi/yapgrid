@@ -109,7 +109,7 @@ export async function GET() {
           warning: MEMORY_WARNING_MB,
           critical: MEMORY_CRITICAL_MB,
         },
-        status: memoryUsageMB.heapUsed < MEMORY_WARNING_MB ? 'healthy' : memoryUsageMB.heapUsed < MEMORY_CRITICAL_MB ? 'warning' : 'critical',
+        status: getMemoryStatus(memoryUsageMB.heapUsed),
       },
       database: {
         status: databaseStatus,
@@ -173,6 +173,13 @@ function formatUptime(seconds: number): string {
   if (seconds > 0 || parts.length === 0) parts.push(`${seconds}s`)
 
   return parts.join(' ')
+}
+
+// Helper function to get memory status
+function getMemoryStatus(heapUsedMB: number): 'healthy' | 'warning' | 'critical' {
+  if (heapUsedMB < MEMORY_WARNING_MB) return 'healthy'
+  if (heapUsedMB < MEMORY_CRITICAL_MB) return 'warning'
+  return 'critical'
 }
 
 // Helper function to format time since

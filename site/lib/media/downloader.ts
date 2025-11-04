@@ -179,8 +179,6 @@ export class MediaDownloader {
     }
   }
 
-
-
   /**
    * Download Reddit image
    */
@@ -221,9 +219,9 @@ export class MediaDownloader {
    * Gallery posts are not currently supported and will be skipped
    */
   private async downloadRedditGallery(url: string, postId: string): Promise<MediaInfo | null> {
-    logger.info('Gallery posts are not currently supported - skipping', { postId, url })
+    logger.info('Gallery posts are not currently supported - this post will be skipped', { postId, url })
     // Galleries are skipped gracefully - they won't be marked as failed
-    throw new Error('Gallery posts not supported')
+    throw new Error('Gallery posts are not currently supported - this post will be skipped')
   }
 
   /**
@@ -250,7 +248,12 @@ export class MediaDownloader {
 
       const stats = await fs.stat(finalPath)
 
-      const mediaType = ext === '.mp4' || ext === '.webm' ? 'video' : 'image'
+      // Detect media type based on file extension
+      const videoExts = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.flv', '.wmv']
+      const imageExts = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp']
+      const extLower = ext.toLowerCase()
+      
+      const mediaType = videoExts.includes(extLower) ? 'video' : imageExts.includes(extLower) ? 'image' : 'video'
 
       logger.info('Generic media downloaded', { postId, filename: outputFilename, type: mediaType })
 

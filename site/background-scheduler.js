@@ -49,7 +49,7 @@ cron.schedule('*/2 * * * *', async () => {
     const config = {
       enabled: false,
       delaySeconds: 10,
-      batchSize: Math.min(MAX_CONCURRENT_POSTS, 1) // Limit to max concurrent
+      batchSize: 1 // Default batch size
     };
 
     settings.forEach(setting => {
@@ -61,7 +61,7 @@ cron.schedule('*/2 * * * *', async () => {
           config.delaySeconds = parseInt(setting.value);
           break;
         case 'auto_processing_batch_size':
-          config.batchSize = Math.min(parseInt(setting.value), MAX_CONCURRENT_POSTS);
+          config.batchSize = Math.min(MAX_CONCURRENT_POSTS, parseInt(setting.value) || 1);
           break;
       }
     });
