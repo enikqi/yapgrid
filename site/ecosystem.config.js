@@ -27,7 +27,6 @@ module.exports = {
       retain: 7, // Keep last 7 log files
       compress: true,
       // Performance monitoring
-      autorestart: true,
       exp_backoff_restart_delay: 100
     }
   ]

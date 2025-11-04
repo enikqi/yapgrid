@@ -96,12 +96,8 @@ export class MediaDownloader {
     const tempPath = path.join(this.tempDir, outputFilename)
     const finalPath = path.join(this.mediaDir, outputFilename)
 
-    // Convert v.redd.it URLs to Reddit post URLs for better success rate
-    let downloadUrl = url
-    if (url.includes('v.redd.it')) {
-      logger.debug('Converting v.redd.it URL to post URL', { url })
-      // This will fail gracefully and try the original URL
-    }
+    // Use the URL as-is - yt-dlp handles v.redd.it URLs with proper extractor args
+    const downloadUrl = url
 
     const cookieFile = path.join(this.tempDir, `cookies_${postId}.txt`)
     let cookieFileCreated = false
@@ -160,15 +156,8 @@ export class MediaDownloader {
         size: stats.size,
       }
     } catch (error) {
-      // Try direct download as fallback
-      if (!this.is403Error(error)) {
-        logger.debug('Attempting direct download fallback', { postId, url })
-        try {
-          return await this.directDownloadFallback(url, postId)
-        } catch (fallbackError) {
-          logger.debug('Fallback download also failed', { postId })
-        }
-      }
+      // Don't attempt fallback for 403 errors (blocked by Reddit)
+      // For other errors, the retry logic in downloadMedia will handle it
       throw error
     } finally {
       // Clean up cookie file
@@ -190,15 +179,7 @@ export class MediaDownloader {
     }
   }
 
-  /**
-   * Direct download fallback for when yt-dlp fails
-   */
-  private async directDownloadFallback(url: string, postId: string): Promise<MediaInfo | null> {
-    // This is a placeholder for direct download logic
-    // In a real implementation, you would use axios or fetch to download the file
-    logger.debug('Direct download not implemented yet', { postId, url })
-    return null
-  }
+
 
   /**
    * Download Reddit image
@@ -237,11 +218,12 @@ export class MediaDownloader {
 
   /**
    * Download Reddit gallery (first image only)
+   * Gallery posts are not currently supported and will be skipped
    */
   private async downloadRedditGallery(url: string, postId: string): Promise<MediaInfo | null> {
-    logger.debug('Gallery download not fully implemented - attempting first image', { postId, url })
-    // For now, just log and return null
-    return null
+    logger.info('Gallery posts are not currently supported - skipping', { postId, url })
+    // Galleries are skipped gracefully - they won't be marked as failed
+    throw new Error('Gallery posts not supported')
   }
 
   /**

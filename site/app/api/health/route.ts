@@ -4,6 +4,10 @@ import { createLogger } from '@/lib/logger'
 
 const logger = createLogger('api/health')
 
+// Configuration
+const MEMORY_WARNING_MB = parseInt(process.env.MEMORY_WARNING_MB || '600') // 75% of 800M limit
+const MEMORY_CRITICAL_MB = parseInt(process.env.MEMORY_CRITICAL_MB || '750') // ~94% of 800M limit
+
 // Track last successful processing time
 let lastProcessingTime: Date | null = null
 let errorCount = 0
@@ -88,7 +92,7 @@ export async function GET() {
     const uptimeFormatted = formatUptime(uptime)
 
     // Determine overall health status
-    const isHealthy = databaseStatus === 'connected' && memoryUsageMB.heapUsed < 1500
+    const isHealthy = databaseStatus === 'connected' && memoryUsageMB.heapUsed < MEMORY_CRITICAL_MB
     const status = isHealthy ? 'online' : 'degraded'
 
     const responseTime = Date.now() - startTime
@@ -102,10 +106,10 @@ export async function GET() {
       memory: {
         usage: memoryUsageMB,
         limit: {
-          warning: 1500, // MB
-          critical: 1800, // MB
+          warning: MEMORY_WARNING_MB,
+          critical: MEMORY_CRITICAL_MB,
         },
-        status: memoryUsageMB.heapUsed < 1500 ? 'healthy' : memoryUsageMB.heapUsed < 1800 ? 'warning' : 'critical',
+        status: memoryUsageMB.heapUsed < MEMORY_WARNING_MB ? 'healthy' : memoryUsageMB.heapUsed < MEMORY_CRITICAL_MB ? 'warning' : 'critical',
       },
       database: {
         status: databaseStatus,

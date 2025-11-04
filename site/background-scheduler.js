@@ -5,6 +5,9 @@ const prisma = new PrismaClient();
 
 console.log('🚀 Starting background job scheduler...');
 
+// Configuration
+const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3002';
+
 // Auto-processing cron job (runs every 2 minutes to process NEW posts)
 // Reduced from 30 seconds to prevent CPU spikes and missed executions
 let isProcessing = false;
@@ -92,7 +95,7 @@ cron.schedule('*/2 * * * *', async () => {
         console.log(`📝 Processing: ${post.title.substring(0, 50)}...`);
         
         // Call the process posts API endpoint
-        const response = await fetch(`http://localhost:3002/api/posts/process`, {
+        const response = await fetch(`${API_BASE_URL}/api/posts/process`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ postId: post.id })
@@ -172,7 +175,7 @@ cron.schedule('* * * * *', async () => {
     console.log('🔄 Checking for posts to auto-publish...');
 
     // Call the auto-publish API endpoint
-    const response = await fetch(`http://localhost:3002/api/auto-publish`, {
+    const response = await fetch(`${API_BASE_URL}/api/auto-publish`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }
     });
@@ -242,7 +245,7 @@ cron.schedule('0 * * * *', async () => {
     console.log('⏰ Cleanup cron job running...');
     
     // Call the cleanup API endpoint
-    const response = await fetch(`http://localhost:3002/api/admin/cleanup`, {
+    const response = await fetch(`${API_BASE_URL}/api/admin/cleanup`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }
     });
