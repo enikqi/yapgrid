@@ -17,10 +17,10 @@ The YapGrid site was experiencing 504 Gateway Timeout errors from nginx. This oc
 Updated timeout and buffer settings:
 
 #### Main proxy location (`/`)
-- **Increased timeouts** from 60s to 300s (5 minutes):
-  - `proxy_connect_timeout`: 300s
-  - `proxy_send_timeout`: 300s
-  - `proxy_read_timeout`: 300s
+- **Increased timeouts** from 60s to 120s (2 minutes):
+  - `proxy_connect_timeout`: 120s
+  - `proxy_send_timeout`: 120s
+  - `proxy_read_timeout`: 120s
 - **Added buffer settings** for large responses:
   - `proxy_buffering`: on
   - `proxy_buffer_size`: 4k
@@ -29,7 +29,7 @@ Updated timeout and buffer settings:
 
 #### API endpoints (`/api/`)
 - Added a dedicated location block for API endpoints
-- **Same extended timeouts**: 300s for all timeout settings
+- **Extended timeouts**: 180s (3 minutes) for all timeout settings
 - **Larger buffer settings** for API responses:
   - `proxy_buffer_size`: 8k
   - `proxy_buffers`: 16 8k
@@ -41,7 +41,7 @@ Added performance optimizations:
 - **Server Components External Packages**: Added `prisma`, `@prisma/client`, and `selenium-webdriver` to prevent bundling issues
 - **Optimized Package Imports**: Added `lucide-react` to reduce bundle size
 - **HTTP Keep-Alive**: Enabled with 60-second keep-alive for better connection management
-- **Allowed Origins**: Added explicit allowed origins for server actions
+- **Allowed Origins**: Added environment-specific allowed origins for server actions (localhost only in development)
 
 ## Deployment Steps
 
@@ -87,10 +87,11 @@ pm2 status
 ```
 
 ## Expected Results
-- ✅ No more 504 Gateway Timeout errors on page loads
-- ✅ API endpoints can take up to 5 minutes to respond (though they should be much faster)
-- ✅ Better handling of large responses
+- ✅ No more 504 Gateway Timeout errors on page loads (up to 2 minutes allowed)
+- ✅ API endpoints can take up to 3 minutes to respond (though they should be much faster)
+- ✅ Better handling of large responses with improved buffering
 - ✅ Improved connection management between nginx and Next.js
+- ✅ Environment-specific security with conditional allowed origins
 
 ## Rollback Plan
 If issues occur after deployment:

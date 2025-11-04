@@ -11,7 +11,10 @@ const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
       bodySizeLimit: '10mb',
-      allowedOrigins: ['yapgrid.com', 'www.yapgrid.com', 'localhost:3002'],
+      // Only allow localhost in development, production origins in production
+      allowedOrigins: process.env.NODE_ENV === 'production' 
+        ? ['yapgrid.com', 'www.yapgrid.com']
+        : ['yapgrid.com', 'www.yapgrid.com', 'localhost:3002'],
     },
     // Optimize server-side rendering performance
     optimizePackageImports: ['lucide-react'],
