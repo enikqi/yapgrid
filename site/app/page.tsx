@@ -42,10 +42,7 @@ export default function HomePage() {
   const [filteredPosts, setFilteredPosts] = useState<(Post & { assets: Asset[] })[]>([])
   const [isFiltering, setIsFiltering] = useState(false)
   
-  // Virtual scrolling state
-  const [visibleStartIndex, setVisibleStartIndex] = useState(0)
-  const [visibleEndIndex, setVisibleEndIndex] = useState(20)
-  const ITEMS_PER_PAGE = 20
+
 
   // Subscription state
   const [subscriptions, setSubscriptions] = useState<Set<string>>(new Set())
@@ -56,36 +53,24 @@ export default function HomePage() {
   // Mobile search overlay state
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false)
 
-  // Virtual scrolling - only render visible posts
-  const visiblePosts = useMemo(() => {
-    const currentPosts = isSearching ? searchResults : posts
-    return currentPosts.slice(visibleStartIndex, visibleEndIndex)
-  }, [posts, searchResults, isSearching, visibleStartIndex, visibleEndIndex])
 
-  // Intersection Observer for virtual scrolling
-  const handleScroll = useCallback(() => {
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop
-    const windowHeight = window.innerHeight
-    const documentHeight = document.documentElement.scrollHeight
-    
-    // Update visible range based on scroll position
-    const newStartIndex = Math.floor(scrollTop / 400) // Assuming ~400px per post
-    const newEndIndex = Math.min(newStartIndex + ITEMS_PER_PAGE, posts.length)
-    
-    setVisibleStartIndex(newStartIndex)
-    setVisibleEndIndex(newEndIndex)
-    
-    // Load more posts when near bottom
-    if (scrollTop + windowHeight >= documentHeight - 1000 && hasMore && !loadMoreLoading) {
-      loadMore()
-    }
-  }, [posts.length, hasMore, loadMoreLoading])
 
-  // Wire up window scroll to update visible range
+  // Infinite scroll handler - load more posts when near bottom
   useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+      const windowHeight = window.innerHeight
+      const documentHeight = document.documentElement.scrollHeight
+      
+      // Load more posts when near bottom (no visible range updates)
+      if (scrollTop + windowHeight >= documentHeight - 1000 && hasMore && !loadMoreLoading) {
+        loadMore()
+      }
+    }
+
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [handleScroll])
+  }, [hasMore, loadMoreLoading, loadMore])
 
   // Avoid preloading images to reduce initial network pressure
   const preloadImages = useCallback((_posts: (Post & { assets: Asset[] })[]) => {
@@ -957,11 +942,11 @@ export default function HomePage() {
               </div>
               
               <div className="space-y-3">
-                {visiblePosts.map((post, index) => (
+                {(isSearching ? searchResults : posts).map((post) => (
                   <PostCard
-                    key={`${post.id}-${index}`}
+                    key={post.id}
                     post={post}
-            onVideoPlay={setSelectedPost}
+                    onVideoPlay={setSelectedPost}
                     onPostDelete={handlePostDelete}
                     showPlayButton={true}
                   />
