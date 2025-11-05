@@ -6,8 +6,11 @@ const logger = createLogger('api/health')
 
 export async function GET() {
   try {
-    // Test database connection
-    await prisma.$executeRaw`SELECT 1`
+    // Test database connection - use a simple query that works with SQLite
+    await prisma.post.findFirst({
+      select: { id: true },
+      take: 1
+    })
     
     return NextResponse.json({
       status: 'healthy',
