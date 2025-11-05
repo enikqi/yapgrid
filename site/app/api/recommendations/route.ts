@@ -78,7 +78,13 @@ export async function GET(request: NextRequest) {
     // Get total count first
     const totalCount = await prisma.post.count({ where })
 
-    // Optimize database query - reduce data transfer
+    // For proper infinite scroll, we need to fetch posts in a way that allows pagination
+    // to continue. The recommendation engine may filter/reorder, so we fetch a larger
+    // batch to ensure we have enough posts after filtering.
+    // Fetch up to 1000 posts at a time (or all if less) to allow recommendation engine
+    // to work with a good dataset, then paginate from the results
+    const maxPostsToFetch = Math.min(1000, totalCount) // Fetch up to 1000 posts for recommendation engine
+    
     const posts = await prisma.post.findMany({
       where,
       select: {
@@ -108,7 +114,7 @@ export async function GET(request: NextRequest) {
       orderBy: {
         publishedAt: 'desc'
       },
-      take: Math.min(pageSize * 2, totalCount), // Further reduced to 2x for faster loading
+      take: maxPostsToFetch, // Fetch larger batch for recommendation engine
     })
 
     // Optimize asset URL transformation - batch process
@@ -153,15 +159,28 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Apply pagination
+    // Apply pagination to recommended posts
     const paginatedPosts = recommendedPosts.slice(skip, skip + pageSize)
+    
+    // Calculate hasMore correctly:
+    // 1. If we have more posts in the recommended list than what we're returning
+    // 2. OR if we haven't fetched all posts yet (posts.length < totalCount)
+    // 3. OR if we're at the end of fetched posts but totalCount shows more exist
+    const hasMorePosts = 
+      (skip + pageSize < recommendedPosts.length) || // More in current batch
+      (posts.length >= maxPostsToFetch && skip + pageSize < totalCount) || // More in DB, need to fetch next batch
+      (skip + pageSize < totalCount && recommendedPosts.length >= skip + pageSize) // More posts exist
 
     logger.info({ 
       algorithm, 
       page, 
       pageSize, 
       totalPosts: posts.length,
-      recommendedCount: paginatedPosts.length,
+      recommendedCount: recommendedPosts.length,
+      paginatedCount: paginatedPosts.length,
+      hasMore: hasMorePosts,
+      skip,
+      totalCount,
       personalized: userProfile.preferences.personalizedFeed
     }, 'Generated post recommendations')
 
@@ -173,7 +192,7 @@ export async function GET(request: NextRequest) {
         total: totalCount,
         page,
         pageSize,
-        hasMore: skip + pageSize < totalCount,
+        hasMore: hasMorePosts,
         algorithm,
         personalized: userProfile.preferences.personalizedFeed
       }

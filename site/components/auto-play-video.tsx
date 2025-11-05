@@ -51,42 +51,76 @@ export default function AutoPlayVideo({
   const isMobile = useMobileDetection();
   const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Helper function to get video URL with fallback
-  const getVideoUrl = useCallback((url: string | null | undefined): string => {
-    if (!url) {
-      console.warn("Video URL is empty or undefined");
+  // Helper function to get video URL with proper storage handling
+  const getVideoUrl = useCallback((asset: typeof videoAsset): string => {
+    if (!asset) {
+      console.warn("Video asset is missing");
       return "";
     }
 
     try {
-      // If it's a reddit video URL, use the fallback
-      if (url.includes("v.redd.it") || url.includes("reddit.com")) {
-        return `https://v.redd.it/8n3sx9sib2wf1/DASH_720.mp4`;
+      let videoUrl = "";
+      
+      // Use the asset URL if it's already set and valid
+      if (asset.url) {
+        // If it's already an absolute URL, return as is
+        if (asset.url.startsWith("http://") || asset.url.startsWith("https://")) {
+          videoUrl = asset.url;
+        }
+        // If it's a Reddit video URL, return as is (will be handled by API)
+        else if (asset.url.includes("v.redd.it") || asset.url.includes("reddit.com")) {
+          videoUrl = asset.url;
+        }
+        // If it's already /api/media/..., return as is
+        else if (asset.url.startsWith("/api/media/")) {
+          videoUrl = asset.url;
+        }
+        // Convert /media/... to /api/media/... for proper serving
+        else if (asset.url.startsWith("/media/")) {
+          videoUrl = `/api${asset.url}`;
+        }
       }
 
-      // If already absolute, return as is
-      if (url.startsWith("http://") || url.startsWith("https://")) {
-        return url;
+      // Fallback: Use pathOrKey if URL is not available or didn't match
+      if (!videoUrl && asset.pathOrKey) {
+        // For LOCAL storage, serve via /api/media/
+        if (asset.storage === 'LOCAL') {
+          // Extract filename from path
+          const filename = asset.pathOrKey.split(/[/\\]/).pop() || asset.pathOrKey;
+          videoUrl = `/api/media/${encodeURIComponent(filename)}`;
+        }
+        // For S3 storage, we need to get signed URL (handled by API)
+        else if (asset.storage === 'S3') {
+          videoUrl = `/api/media/${encodeURIComponent(asset.pathOrKey)}`;
+        }
+        // Default: treat as filename
+        else {
+          videoUrl = `/api/media/${encodeURIComponent(asset.pathOrKey)}`;
+        }
       }
 
-      // Convert /media/... to /api/media/... for proper serving
-      if (url.startsWith("/media/")) {
-        return `/api${url}`;
+      if (!videoUrl) {
+        console.error("Video asset has no URL or pathOrKey:", asset);
+        setError("Video URL not available");
+        return "";
       }
 
-      // If it's already /api/media/..., return as is
-      if (url.startsWith("/api/media/")) {
-        return url;
-      }
+      // Log the final URL for debugging
+      console.log("Video URL generated:", {
+        postId: post.id,
+        assetUrl: asset.url,
+        pathOrKey: asset.pathOrKey,
+        storage: asset.storage,
+        finalUrl: videoUrl
+      });
 
-      // For any other relative path, prepend /api/media/
-      return `/api/media/${url}`;
+      return videoUrl;
     } catch (err) {
-      console.error("Error getting video URL:", err);
+      console.error("Error getting video URL:", err, asset);
       setError("Invalid video URL");
       return "";
     }
-  }, []);
+  }, [post.id]);
 
   // Load saved volume from localStorage
   const [volume, setVolume] = useState(() => {
@@ -113,8 +147,9 @@ export default function AutoPlayVideo({
   const timelineStartTimeRef = useRef<number>(0);
   const timelineWidthRef = useRef<number>(0);
 
-  // Find video asset
-  const videoAsset = post.assets.find((a) => a.type === "VIDEO");
+  // Find video asset - if multiple, prefer the one with a valid URL or pathOrKey
+  const videoAssets = post.assets.filter((a) => a.type === "VIDEO");
+  const videoAsset = videoAssets.find((a) => a.url || a.pathOrKey) || videoAssets[0];
   const thumbnailAsset = post.assets.find((a) => a.type === "THUMBNAIL");
   // Prioritize video over thumbnail - if there's a video, use it for the player
   const displayAsset = videoAsset || thumbnailAsset || post.assets[0];
@@ -415,7 +450,7 @@ export default function AutoPlayVideo({
     };
   }, []);
 
-  // Handle video error with retry mechanism
+  // Handle video error with improved retry mechanism
   const handleError = useCallback(
     (e: React.SyntheticEvent<HTMLVideoElement>) => {
       console.error("Video error:", e);
@@ -442,24 +477,41 @@ export default function AutoPlayVideo({
           code: error.code,
           message: error.message,
           retryCount,
+          videoSrc: video.src,
+          videoCurrentSrc: video.currentSrc,
+          videoNetworkState: video.networkState,
+          videoReadyState: video.readyState,
+          videoAsset: videoAsset ? {
+            url: videoAsset.url,
+            pathOrKey: videoAsset.pathOrKey,
+            storage: videoAsset.storage,
+            generatedUrl: getVideoUrl(videoAsset)
+          } : null,
         });
       }
 
-      // Auto-retry up to 2 times for network errors
-      if (error?.code === MediaError.MEDIA_ERR_NETWORK && retryCount < 2) {
-        console.log(`Auto-retrying video load (attempt ${retryCount + 1}/2)`);
+      // Auto-retry up to 3 times for network errors and source not supported
+      if (error && (error.code === MediaError.MEDIA_ERR_NETWORK || error.code === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED) && retryCount < 3) {
+        console.log(`Auto-retrying video load (attempt ${retryCount + 1}/3)`);
         // Clear any existing timeout
         if (retryTimeoutRef.current) {
           clearTimeout(retryTimeoutRef.current);
         }
-        // Schedule retry
+        // Schedule retry with exponential backoff
+        const retryDelay = Math.min(1000 * Math.pow(2, retryCount), 5000); // 1s, 2s, 4s max
         retryTimeoutRef.current = setTimeout(() => {
           setRetryCount(retryCount + 1);
-          if (video) {
+          if (video && videoAsset) {
+            // Try reloading the video with the current URL
+            const currentSrc = getVideoUrl(videoAsset);
+            if (currentSrc && currentSrc !== video.src) {
+              // If URL changed, update src
+              video.src = currentSrc;
+            }
             video.load();
           }
           retryTimeoutRef.current = null;
-        }, 1000);
+        }, retryDelay);
         return;
       }
 
@@ -467,7 +519,7 @@ export default function AutoPlayVideo({
       setHasUserInteracted(false);
       setIsPlaying(false);
     },
-    [retryCount],
+    [retryCount, videoAsset, getVideoUrl],
   );
 
   // Cleanup retry timeout on unmount
@@ -653,8 +705,8 @@ export default function AutoPlayVideo({
               touchAction: "manipulation",
             }}
           >
-            {isVisible && (
-              <source src={getVideoUrl(videoAsset.url)} type="video/mp4" />
+            {videoAsset && (
+              <source src={getVideoUrl(videoAsset)} type="video/mp4" />
             )}
           </video>
 

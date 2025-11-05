@@ -7,6 +7,7 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  // Remove standalone output - causes issues with next start
   images: {
     remotePatterns: [
       {

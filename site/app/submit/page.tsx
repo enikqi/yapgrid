@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeft, Image, Link as LinkIcon, FileText, Video, Upload, X, Search, Plus, Check } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'react-hot-toast'
 
-export default function CreatePostPage() {
+function CreatePostPageContent() {
   const { data: session } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -586,5 +586,20 @@ export default function CreatePostPage() {
         </form>
       </div>
     </div>
+  )
+}
+
+export default function CreatePostPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+        </div>
+      </div>
+    }>
+      <CreatePostPageContent />
+    </Suspense>
   )
 }

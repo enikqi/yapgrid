@@ -135,19 +135,11 @@ export default async function PostPage({ params }: { params: { id: string } }) {
     // Extract the post ID from params
     const postId = params.id
     
-    // Get the post with its assets and author
+    // Get the post with its assets
     const post = await prisma.post.findUnique({
       where: { id: postId },
       include: {
-        assets: true,
-        user: {
-          select: {
-            id: true,
-            name: true,
-            image: true,
-            username: true
-          }
-        }
+        assets: true
       }
     })
     

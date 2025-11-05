@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import Head from 'next/head'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -53,80 +53,143 @@ export default function HomePage() {
   // Mobile search overlay state
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false)
 
-
-
-  // Infinite scroll handler - load more posts when near bottom
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop
-      const windowHeight = window.innerHeight
-      const documentHeight = document.documentElement.scrollHeight
-      
-      // Load more posts when near bottom (no visible range updates)
-      if (scrollTop + windowHeight >= documentHeight - 1000 && hasMore && !loadMoreLoading) {
-        loadMore()
-      }
-    }
-
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [hasMore, loadMoreLoading, loadMore])
+  // IntersectionObserver ref for infinite scroll
+  const loadMoreSentinelRef = useRef<HTMLDivElement>(null)
+  const isLoadingMoreRef = useRef(false) // Prevent duplicate loads
 
   // Avoid preloading images to reduce initial network pressure
   const preloadImages = useCallback((_posts: (Post & { assets: Asset[] })[]) => {
     // intentionally no-op
   }, [])
 
-  const fetchPosts = useCallback(async (pageNum: number, algorithm: 'personal' | 'latest' | 'trending' = 'latest') => {
+  const fetchPosts = useCallback(async (pageNum: number, algorithm: 'personal' | 'latest' | 'trending' = 'latest', reset = false) => {
+    // Prevent duplicate requests
+    if (isLoadingMoreRef.current && pageNum > 1) {
+      return
+    }
+
     try {
-      if (pageNum === 1) {
-      setLoading(true)
+      if (pageNum === 1 || reset) {
+        setLoading(true)
+        setHasMore(true) // Reset hasMore when starting fresh
       } else {
         setLoadMoreLoading(true)
+        isLoadingMoreRef.current = true
       }
       
       const params = new URLSearchParams({
         page: pageNum.toString(),
-        pageSize: '15', // Reduced from 20 to 15 for faster loading
+        pageSize: '20', // Increased for better pagination
         algo: algorithm,
         includeNsfw: 'false',
       })
 
-      // Add hidden post IDs from localStorage for non-signed-in users
-      const hiddenPosts = JSON.parse(localStorage.getItem('hiddenPosts') || '[]')
-      if (hiddenPosts.length > 0) {
-        params.append('hiddenPostIds', hiddenPosts.join(','))
+      // Add hidden post IDs from localStorage for non-signed-in users (client-side only)
+      if (typeof window !== 'undefined') {
+        try {
+          const hiddenPosts = JSON.parse(localStorage.getItem('hiddenPosts') || '[]')
+          if (hiddenPosts.length > 0) {
+            params.append('hiddenPostIds', hiddenPosts.join(','))
+          }
+        } catch (e) {
+          // Ignore localStorage errors
+        }
       }
 
       const response = await fetch(`/api/recommendations?${params}`)
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
       const data = await response.json()
 
       if (data.success) {
         const paginatedData = data.data as PaginatedResponse<Post & { assets: Asset[] }>
         
-        if (pageNum === 1) {
+        // Ensure hasMore is calculated correctly
+        const actuallyHasMore = paginatedData.hasMore !== undefined 
+          ? paginatedData.hasMore 
+          : paginatedData.items.length > 0
+        
+        if (pageNum === 1 || reset) {
           setPosts(paginatedData.items)
           setAllPosts(paginatedData.items) // Store all posts for search
+          setPage(1) // Reset page counter
         } else {
           // Prevent duplicates by checking existing post IDs
           setPosts(prevPosts => {
             const existingIds = new Set(prevPosts.map(post => post.id))
             const newUniquePosts = paginatedData.items.filter(post => !existingIds.has(post.id))
-            const combinedPosts = [...prevPosts, ...newUniquePosts]
-            setAllPosts(combinedPosts) // Update all posts
-            return combinedPosts
+            
+            // Only update if we got new posts
+            if (newUniquePosts.length > 0) {
+              const combinedPosts = [...prevPosts, ...newUniquePosts]
+              setAllPosts(combinedPosts) // Update all posts
+              return combinedPosts
+            }
+            return prevPosts
           })
         }
         
-        setHasMore(paginatedData.hasMore)
+        // Only update hasMore if we got results or if API explicitly says no more
+        setHasMore(actuallyHasMore && paginatedData.items.length > 0)
+      } else {
+        console.error('API returned error:', data.error)
+        // Don't set hasMore to false on error - allow retry
       }
     } catch (error) {
       console.error('Failed to fetch posts:', error)
+      // On error, don't set hasMore to false - allow retry
+      // Only set hasMore to false if we're sure there are no more posts
     } finally {
       setLoading(false)
       setLoadMoreLoading(false)
+      isLoadingMoreRef.current = false
     }
-  }, [])
+  }, [currentAlgorithm])
+
+  // Load more function - must be defined before useEffect that uses it
+  const loadMore = useCallback(() => {
+    // Prevent duplicate calls
+    if (isLoadingMoreRef.current || loading || loadMoreLoading || !hasMore || isSearching || isFiltering) {
+      return
+    }
+
+    const nextPage = page + 1
+    setPage(nextPage)
+    fetchPosts(nextPage, currentAlgorithm)
+  }, [loading, loadMoreLoading, hasMore, page, fetchPosts, currentAlgorithm, isSearching, isFiltering])
+
+  // IntersectionObserver for infinite scroll - more performant than scroll events
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (isSearching || isFiltering) return
+    
+    const sentinel = loadMoreSentinelRef.current
+    if (!sentinel) return
+
+    // Create IntersectionObserver with larger rootMargin for earlier loading
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0]
+        if (entry.isIntersecting && hasMore && !loadMoreLoading && !loading && !isSearching && !isFiltering) {
+          loadMore()
+        }
+      },
+      {
+        root: null, // Use viewport as root
+        rootMargin: '1000px', // Start loading 1000px before reaching sentinel
+        threshold: 0.1 // Trigger when 10% of sentinel is visible
+      }
+    )
+
+    observer.observe(sentinel)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [hasMore, loadMoreLoading, loading, isSearching, isFiltering, loadMore])
 
   // Search functionality using API
   const handleSearch = useCallback(async (query: string) => {
@@ -187,7 +250,8 @@ export default function HomePage() {
     setAllPosts([])
     setPage(1)
     setHasMore(true)
-    fetchPosts(1, currentAlgorithm)
+    isLoadingMoreRef.current = false // Reset loading flag
+    fetchPosts(1, currentAlgorithm, true) // Reset flag to true
   }, [currentAlgorithm, fetchPosts])
 
   // Fetch user subscriptions when user is authenticated with debouncing
@@ -278,16 +342,6 @@ export default function HomePage() {
       toast.error('Failed to update subscription')
     }
   }
-
-  const loadMore = useCallback(() => {
-    if (!loading && !loadMoreLoading && hasMore && !isSearching && !isFiltering) {
-      setPage(prevPage => {
-        const nextPage = prevPage + 1
-        fetchPosts(nextPage, currentAlgorithm)
-        return nextPage
-      })
-    }
-  }, [loading, loadMoreLoading, hasMore, fetchPosts, currentAlgorithm, isSearching, isFiltering])
 
   const loadMoreSearchResults = useCallback(async () => {
     if (!loading && searchHasMore && isSearching) {
@@ -953,16 +1007,27 @@ export default function HomePage() {
                 ))}
               </div>
 
-              {/* Load more button */}
+              {/* Infinite scroll sentinel - triggers loadMore when visible */}
               {!isSearching && !isFiltering && hasMore && (
-                <div className="text-center mt-6">
-                  <button
-                    onClick={loadMore}
-                    disabled={loading || loadMoreLoading}
-                    className="px-6 py-2 bg-orange-500 text-white rounded-full hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    {loadMoreLoading ? 'Loading...' : 'Load More Posts'}
-                  </button>
+                <div 
+                  ref={loadMoreSentinelRef}
+                  className="h-10 w-full flex items-center justify-center"
+                >
+                  {loadMoreLoading && (
+                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-orange-500"></div>
+                      <span className="text-sm">Loading more posts...</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* End of posts message */}
+              {!isSearching && !isFiltering && !hasMore && posts.length > 0 && (
+                <div className="text-center mt-6 py-8">
+                  <p className="text-gray-500 dark:text-gray-400">
+                    You've reached the end! No more posts to load.
+                  </p>
                 </div>
               )}
 

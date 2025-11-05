@@ -13,35 +13,55 @@ interface VideoModalProps {
   onClose: () => void
 }
 
-// Helper function to get video URL with fallback
-function getVideoUrl(url: string | null | undefined): string {
-  if (!url) return ''
+// Helper function to get video URL from asset with proper storage handling
+function getVideoUrl(asset: { url?: string | null; pathOrKey?: string | null; storage?: string } | null | undefined): string {
+  if (!asset) return ''
   
   try {
-    // If it's a reddit video URL, use the fallback
-    if (url.includes('v.redd.it') || url.includes('reddit.com')) {
-      return `https://v.redd.it/8n3sx9sib2wf1/DASH_720.mp4`
+    // Use the asset URL if it's already set and valid
+    if (asset.url) {
+      // If it's already an absolute URL, return as is
+      if (asset.url.startsWith('http://') || asset.url.startsWith('https://')) {
+        return asset.url
+      }
+      
+      // If it's a Reddit video URL, return as is
+      if (asset.url.includes('v.redd.it') || asset.url.includes('reddit.com')) {
+        return asset.url
+      }
+      
+      // If it's already /api/media/..., return as is
+      if (asset.url.startsWith('/api/media/')) {
+        return asset.url
+      }
+      
+      // Convert /media/... to /api/media/... for proper serving
+      if (asset.url.startsWith('/media/')) {
+        return `/api${asset.url}`
+      }
     }
-    
-    // If already absolute, return as is
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      return url
+
+    // Fallback: Use pathOrKey if URL is not available
+    if (asset.pathOrKey) {
+      // For LOCAL storage, serve via /api/media/
+      if (asset.storage === 'LOCAL') {
+        // Extract filename from path
+        const filename = asset.pathOrKey.split(/[/\\]/).pop() || asset.pathOrKey
+        return `/api/media/${encodeURIComponent(filename)}`
+      }
+      
+      // For S3 storage, we need to get signed URL (handled by API)
+      if (asset.storage === 'S3') {
+        return `/api/media/${encodeURIComponent(asset.pathOrKey)}`
+      }
+      
+      // Default: treat as filename
+      return `/api/media/${encodeURIComponent(asset.pathOrKey)}`
     }
-    
-    // Convert /media/... to /api/media/... for proper serving
-    if (url.startsWith('/media/')) {
-      return `/api${url}`
-    }
-    
-    // If it's already /api/media/..., return as is
-    if (url.startsWith('/api/media/')) {
-      return url
-    }
-    
-    // For any other relative path, prepend /api/media/
-    return `/api/media/${url}`
+
+    return ''
   } catch (err) {
-    console.error('Error getting video URL:', err)
+    console.error('Error getting video URL:', err, asset)
     return ''
   }
 }
@@ -56,7 +76,7 @@ export function VideoModal({ post, isOpen, onClose }: VideoModalProps) {
 
   const video = post.assets.find(a => a.type === 'VIDEO')
   const thumbnail = post.assets.find(a => a.type === 'THUMBNAIL')
-  const videoUrl = video ? getVideoUrl(video.url) : ''
+  const videoUrl = video ? getVideoUrl(video) : ''
 
   // Handle fullscreen change
   useEffect(() => {
