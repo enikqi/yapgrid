@@ -7,6 +7,11 @@ import { promisify } from 'util'
 const logger = createLogger('api/admin/cron')
 const execAsync = promisify(exec)
 
+// Helper function to get valid PIDs from pgrep output
+function getValidPids(stdout: string): string[] {
+  return stdout.trim().split('\n').filter(pid => pid.trim() && /^\d+$/.test(pid))
+}
+
 // GET /api/admin/cron - Get cron job status
 export async function GET() {
   try {
@@ -111,9 +116,12 @@ export async function POST(request: NextRequest) {
         try {
           // Get PIDs of background-scheduler processes on Linux
           const { stdout } = await execAsync('pgrep -f "background-scheduler"')
-          const pids = stdout.trim().split('\n').filter(pid => pid.trim())
+          const pids = getValidPids(stdout)
           
-          if (pids.length > 0) {
+          if (pids.length === 0) {
+            logger.info('No background-scheduler processes found')
+            result.message = 'Background scheduler was not running'
+          } else {
             // Kill each process
             for (const pid of pids) {
               try {
@@ -124,28 +132,44 @@ export async function POST(request: NextRequest) {
               }
             }
             result.message = 'Background scheduler stopped successfully'
-          } else {
-            result.message = 'Background scheduler was not running'
+            logger.info('Background scheduler stopped')
           }
-          logger.info('Background scheduler stopped')
-        } catch (error) {
-          result.message = 'Background scheduler stopped (was not running)'
-          logger.info('Background scheduler stop attempted (process not found)')
+        } catch (error: any) {
+          // pgrep returns exit code 1 when no processes found
+          if (error.code === 1) {
+            logger.info('No background-scheduler processes running')
+            result.message = 'Background scheduler was not running'
+          } else {
+            throw error
+          }
         }
         break
 
       case 'restart_scheduler':
         try {
           // Stop first - get PIDs and kill them on Linux
-          const { stdout } = await execAsync('pgrep -f "background-scheduler"')
-          const pids = stdout.trim().split('\n').filter(pid => pid.trim())
-          
-          for (const pid of pids) {
-            try {
-              await execAsync(`kill -9 ${pid}`)
-              logger.info(`Killed background-scheduler process with PID ${pid}`)
-            } catch (killError) {
-              logger.warn(`Failed to kill process ${pid}:`, killError)
+          try {
+            const { stdout } = await execAsync('pgrep -f "background-scheduler"')
+            const pids = getValidPids(stdout)
+            
+            if (pids.length === 0) {
+              logger.info('No background-scheduler processes found to stop')
+            } else {
+              for (const pid of pids) {
+                try {
+                  await execAsync(`kill -9 ${pid}`)
+                  logger.info(`Killed background-scheduler process with PID ${pid}`)
+                } catch (killError) {
+                  logger.warn(`Failed to kill process ${pid}:`, killError)
+                }
+              }
+            }
+          } catch (error: any) {
+            // pgrep returns exit code 1 when no processes found
+            if (error.code === 1) {
+              logger.info('No background-scheduler processes running')
+            } else {
+              throw error
             }
           }
           
