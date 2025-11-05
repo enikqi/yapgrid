@@ -1,0 +1,28 @@
+═══════════════════════════════════════════════════════════════
+🖼️  FETCH PHILIPPINES GALLERY POST
+═══════════════════════════════════════════════════════════════
+
+Në SSH terminal, ekzekuto:
+
+cd /home/ubuntu/apps/yapgrid && chmod +x FETCH_PHILIPPINES_GALLERY.sh && ./FETCH_PHILIPPINES_GALLERY.sh
+
+═══════════════════════════════════════════════════════════════
+
+Ky script do të:
+1. ✅ Gjej campaign-in Philippines që sapo krijove
+2. ✅ Trigger manual run për të fetch-uar postet
+3. ✅ Prit 30 sekonda për processing
+4. ✅ Shfaq postet e fetch-uara
+5. ✅ Tregon gallery posts (me shumë imazhe)
+
+═══════════════════════════════════════════════════════════════
+
+Pas ekzekutimit, kontrollo:
+
+🌐 Homepage: https://yapgrid.com
+📍 Community: https://yapgrid.com/y/Philippines
+
+Duhet të shohësh postet me gallery carousel! 🎨
+
+═══════════════════════════════════════════════════════════════
+

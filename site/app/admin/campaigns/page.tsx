@@ -557,7 +557,7 @@ export default function RedditCampaignsPage() {
                     <input
                       type="text"
                       value={Array.isArray(editingCampaign.subreddits) ? editingCampaign.subreddits.join(', ') : editingCampaign.subreddits}
-                      onChange={(e) => setEditingCampaign({...editingCampaign, subreddits: e.target.value})}
+                      onChange={(e) => setEditingCampaign({...editingCampaign, subreddits: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
                       placeholder="funny, videos, memes"
                       className="w-full px-3 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-700"
                     />
@@ -568,7 +568,7 @@ export default function RedditCampaignsPage() {
                     <input
                       type="text"
                       value={Array.isArray(editingCampaign.keywords) ? editingCampaign.keywords.join(', ') : editingCampaign.keywords}
-                      onChange={(e) => setEditingCampaign({...editingCampaign, keywords: e.target.value})}
+                      onChange={(e) => setEditingCampaign({...editingCampaign, keywords: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
                       placeholder="funny, viral, trending"
                       className="w-full px-3 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-700"
                     />
@@ -579,7 +579,7 @@ export default function RedditCampaignsPage() {
                     <input
                       type="text"
                       value={Array.isArray(editingCampaign.excludeKeywords) ? editingCampaign.excludeKeywords.join(', ') : editingCampaign.excludeKeywords}
-                      onChange={(e) => setEditingCampaign({...editingCampaign, excludeKeywords: e.target.value})}
+                      onChange={(e) => setEditingCampaign({...editingCampaign, excludeKeywords: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
                       placeholder="nsfw, spoiler, repost"
                       className="w-full px-3 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-700"
                     />

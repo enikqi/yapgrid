@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { ProcessPostsButton, PublishPostsButton, SchedulerStatus } from './action-buttons'
+// import { ProcessPostsButton, PublishPostsButton, SchedulerStatus } from './action-buttons'
 
 export default function ActionButtonsLoader() {
   useEffect(() => {

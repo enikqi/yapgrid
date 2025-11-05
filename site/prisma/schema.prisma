@@ -51,6 +51,7 @@ model User {
   following     Follow[]       @relation("UserFollowing")
   followers     Follow[]       @relation("UserFollowers")
   hiddenPosts   HiddenPost[]
+  notifications Notification[]
   postHistory   PostHistory[]
   savedPosts    SavedPost[]
   sessions      Session[]
@@ -58,7 +59,6 @@ model User {
   posts         UserPost[]
   userProfile   UserProfile?
   votes         Vote[]
-  notifications Notification[]
 }
 
 model VerificationToken {
@@ -73,7 +73,7 @@ model UserPost {
   id            String          @id @default(cuid())
   title         String
   content       String?
-  type          PostType        @default(TEXT)
+  type          PostType        @default("TEXT")
   subreddit     String
   authorId      String
   score         Int             @default(0)
@@ -201,7 +201,7 @@ model Post {
   nsfw               Boolean       @default(false)
   createdUtc         DateTime
   fetchedAt          DateTime      @default(now())
-  status             PostStatus    @default(NEW)
+  status             PostStatus    @default("NEW")
   pinId              String?
   boardId            String?
   campaignId         String?
@@ -234,7 +234,7 @@ model Asset {
   id          String      @id @default(cuid())
   postId      String
   type        AssetType
-  storage     StorageType @default(LOCAL)
+  storage     StorageType @default("LOCAL")
   pathOrKey   String
   url         String?
   width       Int?
@@ -252,7 +252,7 @@ model Asset {
 model Job {
   id          String    @id @default(cuid())
   type        JobType
-  status      JobStatus @default(PENDING)
+  status      JobStatus @default("PENDING")
   payload     Json?
   result      Json?
   attempts    Int       @default(0)
@@ -288,75 +288,68 @@ model Setting {
 }
 
 model Campaign {
-  id              String    @id @default(cuid())
-  name            String
-  subreddits      Json
-  keywords        Json
-  excludeKeywords Json
-  minScore        Int       @default(0)
-  maxScore        Int?
-  sortBy          String    @default("hot")
-  timeRange       String    @default("day")
-  includeNsfw     Boolean   @default(false)
-  postLimit       Int       @default(25)
-  enabled         Boolean   @default(true)
-  lastRun         DateTime?
-  nextRun         DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  posts           Post[]
+  id                 String              @id @default(cuid())
+  name               String
+  subreddits         Json
+  keywords           Json
+  excludeKeywords    Json
+  minScore           Int                 @default(0)
+  maxScore           Int?
+  sortBy             String              @default("hot")
+  timeRange          String              @default("day")
+  includeNsfw        Boolean             @default(false)
+  postLimit          Int                 @default(25)
+  enabled            Boolean             @default(true)
+  lastRun            DateTime?
+  nextRun            DateTime?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
   pinterestCampaigns PinterestCampaign[]
+  posts              Post[]
 
   @@index([enabled])
   @@index([lastRun])
 }
 
 model PinterestCampaign {
-  id                String    @id @default(cuid())
-  name              String
-  campaignId        String
-  sessionId         String
-  boardName         String
-  scheduleInterval  Int       @default(60) // minutes between posts
-  enabled           Boolean   @default(true)
-  lastRun           DateTime?
-  nextRun           DateTime?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  campaign          Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  pinterestPosts    PinterestPost[]
+  id               String          @id @default(cuid())
+  name             String
+  campaignId       String
+  sessionId        String
+  boardName        String
+  scheduleInterval Int             @default(60)
+  enabled          Boolean         @default(true)
+  lastRun          DateTime?
+  nextRun          DateTime?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  campaign         Campaign        @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  pinterestPosts   PinterestPost[]
 
   @@index([enabled])
   @@index([nextRun])
 }
 
 model PinterestPost {
-  id                    String            @id @default(cuid())
-  pinterestCampaignId   String
-  postId                String
-  pinId                 String?
-  title                 String
-  description           String?
-  imageUrl              String
-  link                  String?
-  boardName             String
-  status                PinterestPostStatus @default(PENDING)
-  scheduledAt           DateTime?
-  publishedAt           DateTime?
-  createdAt             DateTime          @default(now())
-  updatedAt             DateTime          @updatedAt
-  pinterestCampaign     PinterestCampaign @relation(fields: [pinterestCampaignId], references: [id], onDelete: Cascade)
+  id                  String              @id @default(cuid())
+  pinterestCampaignId String
+  postId              String
+  pinId               String?
+  title               String
+  description         String?
+  imageUrl            String
+  link                String?
+  boardName           String
+  status              PinterestPostStatus @default("PENDING")
+  scheduledAt         DateTime?
+  publishedAt         DateTime?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  pinterestCampaign   PinterestCampaign   @relation(fields: [pinterestCampaignId], references: [id], onDelete: Cascade)
 
   @@index([status])
   @@index([scheduledAt])
   @@index([publishedAt])
-}
-
-enum PinterestPostStatus {
-  PENDING
-  SCHEDULED
-  PUBLISHED
-  FAILED
 }
 
 model HiddenPost {
@@ -384,10 +377,10 @@ model UserProfile {
 model Notification {
   id        String   @id @default(cuid())
   userId    String
-  type      String   // 'comment', 'upvote', 'new_post', 'community_update'
+  type      String
   title     String
   message   String
-  link      String?  // URL to related content
+  link      String?
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -407,6 +400,13 @@ model PostVote {
   @@unique([postId, userEmail])
   @@index([postId])
   @@index([userEmail])
+}
+
+enum PinterestPostStatus {
+  PENDING
+  SCHEDULED
+  PUBLISHED
+  FAILED
 }
 
 enum PostStatus {

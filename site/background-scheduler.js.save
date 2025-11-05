@@ -1,0 +1,242 @@
+
+
+
+
+const cron = require('node-cron');
+const { PrismaClient } = require('@prisma/client');
+
+const prisma = new PrismaClient();
+
+console.log('🚀 Starting background job scheduler...');
+
+// Auto-processing cron job (runs every 30 seconds to process NEW posts)
+cron.schedule('*/30 * * * * *', async () => {
+  try {
+    console.log('⏰ Auto-processing cron job running...');
+    
+    // Get auto-processing configuration
+    const settings = await prisma.setting.findMany({
+      where: {
+        key: {
+          in: [
+            'auto_processing_enabled',
+            'auto_processing_delay_seconds',
+            'auto_processing_batch_size'
+          ]
+        }
+      }
+    });
+
+    const config = {
+      enabled: false,
+      delaySeconds: 10,
+      batchSize: 1
+    };
+
+    settings.forEach(setting => {
+      switch (setting.key) {
+        case 'auto_processing_enabled':
+          config.enabled = setting.value === 'true';
+          break;
+        case 'auto_processing_delay_seconds':
+          config.delaySeconds = parseInt(setting.value);
+          break;
+        case 'auto_processing_batch_size':
+          config.batchSize = parseInt(setting.value);
+          break;
+      }
+    });
+
+    if (!config.enabled) {
+      console.log('❌ Auto-processing is disabled');
+      return;
+    }
+
+    // Find NEW posts to process
+    const postsToProcess = await prisma.post.findMany({
+      where: {
+        status: 'NEW'
+      },
+      orderBy: {
+        createdAt: 'asc'
+      },
+      take: config.batchSize
+    });
+
+    if (postsToProcess.length === 0) {
+      console.log('📝 No NEW posts to process');
+      return;
+    }
+
+    console.log(`🔄 Processing ${config.batchSize} posts (found ${postsToProcess.length} total)...`);
+
+    // Call the process posts API endpoint to handle batch processing
+    try {
+      const response = await fetch(`http://localhost:3002/api/posts/process`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          batchSize: config.batchSize, 
+          intervalMinutes: 1 // Schedule posts to publish 1 minute from now (matches auto-publish interval)
+        })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        console.log(`✅ Processed ${result.data.processedCount} posts successfully`);
+        if (result.data.posts && result.data.posts.length > 0) {
+          result.data.posts.forEach((post) => {
+            console.log(`  ✓ ${post.title.substring(0, 50)}... [${post.status}]`);
+          });
+        }
+      } else {
+        console.log(`❌ Failed to process posts: ${result.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.log(`❌ Error calling process API: ${error.message}`);
+    }
+  } catch (error) {
+    console.log(`❌ Auto-processing error: ${error.message}`);
+  }
+});
+
+// Auto-publish cron job (runs every minute to check for scheduled posts)
+cron.schedule('* * * * *', async () => {
+  try {
+    console.log('⏰ Auto-publish cron job running...');
+    
+    // Get auto-posting configuration (use same keys as API route)
+    const settings = await prisma.setting.findMany({
+      where: {
+        key: {
+          in: [
+            'autoPublish',
+            'autoPublishIntervalMinutes',
+            'autoPublishBatchSize',
+            // Fallback to old keys for backward compatibility
+            'auto_posting_enabled',
+            'auto_posting_interval_minutes',
+            'auto_posting_batch_size'
+          ]
+        }
+      }
+    });
+
+    const config = {
+      enabled: false,
+      intervalMinutes: 30,
+      batchSize: 1
+    };
+
+    settings.forEach(setting => {
+      switch (setting.key) {
+        case 'autoPublish':
+        case 'auto_posting_enabled':
+          config.enabled = setting.value === 'true' || setting.value === true;
+          break;
+        case 'autoPublishIntervalMinutes':
+        case 'auto_posting_interval_minutes':
+          config.intervalMinutes = parseInt(setting.value);
+          break;
+        case 'autoPublishBatchSize':
+        case 'auto_posting_batch_size':
+          config.batchSize = parseInt(setting.value);
+          break;
+      }
+    });
+
+    if (!config.enabled) {
+      console.log('❌ Auto-posting is disabled');
+      return;
+    }
+
+    console.log('🔄 Checking for posts to auto-publish...');
+
+    // Call the auto-publish API endpoint
+    const response = await fetch(`http://localhost:3002/api/auto-publish`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    const result = await response.json();
+    
+    if (result.success && result.data.publishedCount > 0) {
+      console.log(`✅ Auto-published ${result.data.publishedCount} posts`);
+    } else {
+      console.log('📝 No posts to auto-publish');
+    }
+  } catch (error) {
+    console.log(`❌ Auto-publish error: ${error.message}`);
+  }
+});
+
+// Auto-fetch cron job (runs every 30 minutes)
+cron.schedule('*/30 * * * *', async () => {
+  try {
+    console.log('⏰ Auto-fetch cron job running...');
+    
+    // Get auto-ingest configuration
+    const settings = await prisma.setting.findMany({
+      where: {
+        key: {
+          in: [
+            'auto_ingest_enabled'
+          ]
+        }
+      }
+    });
+
+    const config = {
+      enabled: false
+    };
+
+    settings.forEach(setting => {
+      if (setting.key === 'auto_ingest_enabled') {
+        config.enabled = setting.value === 'true';
+      }
+    });
+
+    if (!config.enabled) {
+      console.log('❌ Auto-ingest is disabled');
+      return;
+    }
+
+    console.log('🔄 Running auto-fetch...');
+
+    // Call the auto-fetch script with correct path
+    const { exec } = require('child_process');
+    const path = require('path');
+    const autoFetchScript = path.join(__dirname, 'auto-fetch-cron.js');
+    exec(`node ${autoFetchScript}`, { cwd: __dirname }, (error, stdout, stderr) => {
+      if (error) {
+        console.log(`❌ Auto-fetch error: ${error.message}`);
+        if (stderr) console.log(`stderr: ${stderr}`);
+        return;
+      }
+      if (stdout) console.log(stdout);
+      console.log('✅ Auto-fetch completed');
+    });
+  } catch (error) {
+    console.log(`❌ Auto-fetch error: ${error.message}`);
+  }
+});
+
+console.log('✅ Background job scheduler started successfully!');
+console.log('📊 Cron jobs scheduled:');
+console.log('  - Auto-processing: Every 30 seconds');
+console.log('  - Auto-publish: Every minute');
+console.log('  - Auto-fetch: Every 30 minutes');
+
+// Keep the process running
+process.on('SIGINT', async () => {
+  console.log('\n🛑 Shutting down background job scheduler...');
+  await prisma.$disconnect();
+  process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+  console.log('\n🛑 Shutting down background job scheduler...');
+  await prisma.$disconnect();
+  process.exit(0);
+});

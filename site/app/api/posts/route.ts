@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status') || 'NEW'
     const subreddit = searchParams.get('subreddit')
     const includeNsfw = searchParams.get('includeNsfw') === 'true'
-    const sortBy = searchParams.get('sortBy') || 'publishedAt'
+    const sortBy = searchParams.get('sortBy') || (status === 'PUBLISHED' ? 'publishedAt' : 'createdUtc')
     const assetType = searchParams.get('assetType')
     const hiddenPostIds = searchParams.get('hiddenPostIds') // For localStorage hidden posts
 
@@ -115,17 +115,15 @@ export async function GET(request: NextRequest) {
           assets: true,
         },
         orderBy: (() => {
-          switch (sortBy) {
-            case 'score':
-              return { score: 'desc' }
-            case 'publishedAt':
-              return { publishedAt: 'desc' }
-            case 'createdUtc':
-              return { createdUtc: 'desc' }
-            default:
-              return status === 'PUBLISHED' 
-                ? { publishedAt: 'desc' }
-                : { createdUtc: 'desc' }
+          if (sortBy === 'score') {
+            return { score: 'desc' }
+          } else if (sortBy === 'createdUtc') {
+            return { createdUtc: 'desc' }
+          } else {
+            // Default to publishedAt for PUBLISHED posts, createdUtc for others
+            return status === 'PUBLISHED' 
+              ? { publishedAt: 'desc' }
+              : { createdUtc: 'desc' }
           }
         })(),
         skip,
@@ -166,7 +164,12 @@ export async function GET(request: NextRequest) {
       },
     }
 
-    return NextResponse.json(response)
+    return NextResponse.json(response, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+        'CDN-Cache-Control': 'public, s-maxage=60',
+      }
+    })
   } catch (error) {
     logger.error('Failed to fetch posts', { error })
     

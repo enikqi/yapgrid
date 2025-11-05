@@ -108,7 +108,8 @@ export async function GET(request: NextRequest) {
       orderBy: {
         publishedAt: 'desc'
       },
-      take: Math.min(pageSize * 2, totalCount), // Further reduced to 2x for faster loading
+      skip,
+      take: pageSize,
     })
 
     // Optimize asset URL transformation - batch process
@@ -184,7 +185,7 @@ export async function GET(request: NextRequest) {
     
     return response
   } catch (error) {
-    logger.error({ error }, 'Failed to get recommendations')
+    logger.error('Failed to get recommendations', { error })
     return NextResponse.json(
       { success: false, error: 'Failed to get recommendations' },
       { status: 500 }

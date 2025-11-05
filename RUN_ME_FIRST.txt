@@ -1,0 +1,92 @@
+═══════════════════════════════════════════════════════════════
+🚀 YAPGRID - DEPLOYMENT ME NJË KOMANDË
+═══════════════════════════════════════════════════════════════
+
+HY SSH dhe ekzekuto këtë:
+
+cd /home/ubuntu/apps/yapgrid && chmod +x COMPLETE_SETUP.sh && ./COMPLETE_SETUP.sh
+
+═══════════════════════════════════════════════════════════════
+
+KY SKENAR DO TË:
+
+✅ Ndërtojë design-in e ri (gallery carousel + post cards modern)
+✅ Restartojë PM2 dhe background scheduler
+✅ Fetch-ojë poste të reja nga Reddit
+✅ Kontrollojë për gallery posts
+✅ Shfaqë status-in e sistemit
+
+═══════════════════════════════════════════════════════════════
+
+NËSE DËSHIRON TË BËSH HAPA TË VEÇANTË:
+
+1. VETËM DEPLOYMENT:
+   cd /home/ubuntu/apps/yapgrid && chmod +x DEPLOY_NOW.sh && ./DEPLOY_NOW.sh
+
+2. VETËM FETCH POSTE:
+   cd /home/ubuntu/apps/yapgrid && chmod +x FORCE_FETCH_POSTS.sh && ./FORCE_FETCH_POSTS.sh
+
+3. VETËM CHECK GALLERY:
+   cd /home/ubuntu/apps/yapgrid && chmod +x CHECK_GALLERY.sh && ./CHECK_GALLERY.sh
+
+═══════════════════════════════════════════════════════════════
+
+NDRYSHIMET E BËRA:
+
+📁 /site/components/gallery-carousel.tsx
+   - Carousel për gallery posts me shumë imazhe
+   - Left/right arrows për navigim
+   - Image counter (1/5, 2/5, etc.)
+   - Dot indicators
+
+📁 /site/components/post-card.tsx
+   - Design modern si Reddit
+   - Rounded corners dhe shadows
+   - Hover effects
+   - Gallery support
+   - Typography më e mirë
+   - Spacing optimal
+
+═══════════════════════════════════════════════════════════════
+
+REZULTATI I PRITSHËM:
+
+🎨 Post Cards:
+   - Më modern, më elegant
+   - Rounded corners (border-radius)
+   - Shadow effects për depth
+   - Hover transitions
+
+🖼️ Gallery Posts:
+   - Carousel me multiple images
+   - Navigation me arrows (show on hover)
+   - Image counter badge (top-right)
+   - Dot indicators (bottom)
+
+📹 Video Posts:
+   - Si më parë (AutoPlay)
+
+📷 Single Image Posts:
+   - Një imazh i madh
+   - Click për ta hapur në tab të ri
+
+═══════════════════════════════════════════════════════════════
+
+TESTIM:
+
+1. Shko te: https://yapgrid.com
+2. Duhet të shohësh post cards më modern
+3. Nëse ka gallery posts, do të shohësh carousel
+4. Kliko arrows për të naviguar
+5. Kliko dot indicators për të shkuar në imazh specifik
+
+═══════════════════════════════════════════════════════════════
+
+LOGS:
+
+📝 Scheduler: tail -f /tmp/scheduler.log
+📊 PM2: pm2 logs yapgrid-nextjs
+🔍 Status: pm2 status
+
+═══════════════════════════════════════════════════════════════
+

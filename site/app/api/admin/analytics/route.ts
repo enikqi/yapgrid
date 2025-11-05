@@ -150,12 +150,7 @@ export async function GET(request: NextRequest) {
       timeRange: range
     }
 
-    logger.info({ 
-      range,
-      totalPosts,
-      totalViews: mockAnalytics.totalViews,
-      avgEngagement: avgEngagement.toFixed(2)
-    }, 'Analytics data generated')
+    logger.info(`Analytics data generated for range: ${range}, totalPosts: ${totalPosts}, totalViews: ${mockAnalytics.totalViews}`)
 
     return NextResponse.json({
       success: true,
@@ -163,7 +158,7 @@ export async function GET(request: NextRequest) {
     })
 
   } catch (error) {
-    logger.error({ error }, 'Failed to fetch analytics data')
+    logger.error(`Failed to fetch analytics data: ${error}`)
     return NextResponse.json(
       { success: false, error: 'Failed to fetch analytics data' },
       { status: 500 }

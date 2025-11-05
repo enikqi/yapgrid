@@ -30,10 +30,10 @@ export async function GET() {
       orderBy: { name: 'asc' }
     })
 
-    logger.info({ 
+    logger.info('Pinterest campaigns data fetched', { 
       pinterestCampaignsCount: pinterestCampaigns.length,
       campaignsCount: campaigns.length
-    }, 'Pinterest campaigns data fetched')
+    })
 
     return NextResponse.json({
       success: true,
@@ -44,7 +44,7 @@ export async function GET() {
     })
 
   } catch (error) {
-    logger.error({ error }, 'Failed to fetch Pinterest campaigns')
+    logger.error('Failed to fetch Pinterest campaigns', { error })
     return NextResponse.json(
       { success: false, error: 'Failed to fetch Pinterest campaigns' },
       { status: 500 }
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    let result = { success: true, message: '', data: null }
+    let result: { success: boolean; message: string; data: any; error?: string } = { success: true, message: '', data: null }
 
     switch (action) {
       case 'create_campaign':
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
 
         result.message = `Pinterest campaign "${name}" created successfully`
         result.data = newPinterestCampaign
-        logger.info({ campaignId: newPinterestCampaign.id }, 'Pinterest campaign created')
+        logger.info('Pinterest campaign created', { campaignId: newPinterestCampaign.id })
         break
 
       case 'update_campaign':
@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
 
         result.message = 'Pinterest campaign updated successfully'
         result.data = updatedCampaign
-        logger.info({ campaignId: id }, 'Pinterest campaign updated')
+        logger.info('Pinterest campaign updated', { campaignId: id })
         break
 
       case 'delete_campaign':
@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
         })
 
         result.message = 'Pinterest campaign deleted successfully'
-        logger.info({ campaignId: deleteCampaignId }, 'Pinterest campaign deleted')
+        logger.info('Pinterest campaign deleted', { campaignId: deleteCampaignId })
         break
 
       case 'toggle_campaign':
@@ -161,7 +161,7 @@ export async function POST(request: NextRequest) {
 
         result.message = `Pinterest campaign ${enabled ? 'enabled' : 'disabled'} successfully`
         result.data = toggledCampaign
-        logger.info({ campaignId: toggleId, enabled }, 'Pinterest campaign toggled')
+        logger.info('Pinterest campaign toggled', { campaignId: toggleId, enabled })
         break
 
       case 'fetch_boards':
@@ -237,7 +237,7 @@ export async function POST(request: NextRequest) {
               if (pinCreated) {
                 result.message = 'Pinterest pin created successfully'
                 result.data = { success: true }
-                logger.info({ title: pinData.title }, 'Pinterest pin created via Selenium')
+                logger.info('Pinterest pin created via Selenium', { title: pinData.title })
               } else {
                 throw new Error('Failed to create pin')
               }
@@ -249,8 +249,8 @@ export async function POST(request: NextRequest) {
           }
         } catch (error) {
           result.success = false
-          result.error = `Failed to create Pinterest pin: ${error.message}`
-          logger.error({ error: error.message }, 'Selenium pin creation failed')
+          result.error = `Failed to create Pinterest pin: ${error instanceof Error ? error.message : String(error)}`
+          logger.error('Selenium pin creation failed', { error: error instanceof Error ? error.message : String(error) })
         }
         break
 
@@ -285,7 +285,7 @@ export async function POST(request: NextRequest) {
 
         // Mock session validation (replace with actual Pinterest API call)
         result.message = 'Pinterest session is valid!'
-        logger.info({ sessionId: testSessionId.substring(0, 20) + '...' }, 'Pinterest session tested')
+        logger.info('Pinterest session tested', { sessionId: testSessionId.substring(0, 20) + '...' })
         break
 
       default:
@@ -301,7 +301,7 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    logger.error({ error }, 'Failed to execute Pinterest campaign action')
+    logger.error('Failed to execute Pinterest campaign action', { error })
     return NextResponse.json(
       { success: false, error: 'Failed to execute Pinterest campaign action' },
       { status: 500 }

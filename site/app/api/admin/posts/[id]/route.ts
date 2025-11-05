@@ -8,15 +8,16 @@ const logger = createLogger('api/admin/posts/[id]')
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session?.user?.email || !session.user.isAdmin) {
+    const user = session?.user as any
+    if (!session?.user?.email || !user?.isAdmin) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { id } = params
+    const { id } = await params
     const body = await request.json()
     const { status } = body
 
@@ -52,7 +53,7 @@ export async function PATCH(
       }
     })
 
-    logger.info({ postId: id, status }, 'Post status updated')
+    logger.info('Post status updated', { postId: id, status })
 
     return NextResponse.json({
       success: true,
@@ -60,7 +61,8 @@ export async function PATCH(
     })
 
   } catch (error) {
-    logger.error({ error, postId: params.id }, 'Failed to update post')
+    const { id } = await params
+    logger.error('Failed to update post', { error, postId: id })
     return NextResponse.json({ 
       success: false, 
       error: 'Failed to update post' 
@@ -72,7 +74,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Temporarily skip auth check for testing
@@ -81,7 +83,7 @@ export async function DELETE(
     //   return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     // }
 
-    const { id } = params
+    const { id } = await params
 
     // Delete post and related data
     await prisma.$transaction(async (tx) => {
@@ -126,7 +128,7 @@ export async function DELETE(
       })
     })
 
-    logger.info({ postId: id }, 'Post deleted')
+    logger.info('Post deleted', { postId: id })
 
     return NextResponse.json({
       success: true,
@@ -134,7 +136,8 @@ export async function DELETE(
     })
 
   } catch (error) {
-    logger.error({ error, postId: params.id }, 'Failed to delete post')
+    const { id } = await params
+    logger.error('Failed to delete post', { error, postId: id })
     return NextResponse.json({ 
       success: false, 
       error: 'Failed to delete post' 

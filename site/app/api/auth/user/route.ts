@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
         }
       })
 
-      logger.info({ userId: user.id, username: user.username }, 'New user created via Google OAuth')
+      logger.info('New user created via Google OAuth', { userId: user.id, username: user.username })
     }
 
     return NextResponse.json({
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    logger.error({ error }, 'Failed to create/fetch user')
+    logger.error('Failed to create/fetch user', { error })
     return NextResponse.json({
       success: false,
       error: 'Failed to process user'

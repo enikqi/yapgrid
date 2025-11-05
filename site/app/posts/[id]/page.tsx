@@ -6,15 +6,16 @@ import { generatePostStructuredData, generateBreadcrumbStructuredData } from '@/
 import type { Post, Asset } from '@/lib/types'
 
 interface PostPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export async function generateMetadata({ params }: PostPageProps): Promise<Metadata> {
   try {
+    const { id } = await params
     const post = await prisma.post.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         assets: {
           select: {
@@ -103,8 +104,9 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
 
 export default async function PostPage({ params }: PostPageProps) {
   try {
+    const { id } = await params
     const post = await prisma.post.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         assets: true
       }

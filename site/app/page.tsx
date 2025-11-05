@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
-import Head from 'next/head'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { VideoModal } from '@/components/video/video-modal'
@@ -56,36 +55,69 @@ export default function HomePage() {
   // Mobile search overlay state
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false)
 
+  // Container ref for virtual scrolling
+  const containerRef = useRef<HTMLDivElement>(null)
+  const ITEM_HEIGHT = 600 // Approximate height of each post card
+
   // Virtual scrolling - only render visible posts
   const visiblePosts = useMemo(() => {
     const currentPosts = isSearching ? searchResults : posts
     return currentPosts.slice(visibleStartIndex, visibleEndIndex)
   }, [posts, searchResults, isSearching, visibleStartIndex, visibleEndIndex])
 
-  // Intersection Observer for virtual scrolling
-  const handleScroll = useCallback(() => {
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop
-    const windowHeight = window.innerHeight
-    const documentHeight = document.documentElement.scrollHeight
+  // Proper virtual scrolling implementation
+  useEffect(() => {
+    const container = containerRef.current || window
+    if (!container) return
+
+    const handleScroll = () => {
+      const scrollTop = container === window 
+        ? window.pageYOffset || document.documentElement.scrollTop
+        : (container as HTMLDivElement).scrollTop
+      const containerHeight = container === window
+        ? window.innerHeight
+        : (container as HTMLDivElement).clientHeight
+      
+      // Update visible range based on scroll position
+      const startIndex = Math.max(0, Math.floor(scrollTop / ITEM_HEIGHT) - 2) // Buffer of 2 above
+      const endIndex = Math.min(
+        startIndex + Math.ceil(containerHeight / ITEM_HEIGHT) + 4, // Buffer of 4 below
+        posts.length
+      )
+      
+      setVisibleStartIndex(startIndex)
+      setVisibleEndIndex(endIndex)
+      
+      // Load more posts when near bottom
+      const documentHeight = container === window
+        ? document.documentElement.scrollHeight
+        : (container as HTMLDivElement).scrollHeight
+      
+      if (scrollTop + containerHeight >= documentHeight - 1000 && hasMore && !loadMoreLoading) {
+        loadMore()
+      }
+    }
+
+    // Throttle scroll events for better performance
+    let ticking = false
+    const throttledScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          handleScroll()
+          ticking = false
+        })
+        ticking = true
+      }
+    }
+
+    container.addEventListener('scroll', throttledScroll, { passive: true })
+    // Initial calculation
+    handleScroll()
     
-    // Update visible range based on scroll position
-    const newStartIndex = Math.floor(scrollTop / 400) // Assuming ~400px per post
-    const newEndIndex = Math.min(newStartIndex + ITEMS_PER_PAGE, posts.length)
-    
-    setVisibleStartIndex(newStartIndex)
-    setVisibleEndIndex(newEndIndex)
-    
-    // Load more posts when near bottom
-    if (scrollTop + windowHeight >= documentHeight - 1000 && hasMore && !loadMoreLoading) {
-      loadMore()
+    return () => {
+      container.removeEventListener('scroll', throttledScroll)
     }
   }, [posts.length, hasMore, loadMoreLoading])
-
-  // Wire up window scroll to update visible range
-  useEffect(() => {
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [handleScroll])
 
   // Avoid preloading images to reduce initial network pressure
   const preloadImages = useCallback((_posts: (Post & { assets: Asset[] })[]) => {
@@ -108,9 +140,11 @@ export default function HomePage() {
       })
 
       // Add hidden post IDs from localStorage for non-signed-in users
-      const hiddenPosts = JSON.parse(localStorage.getItem('hiddenPosts') || '[]')
-      if (hiddenPosts.length > 0) {
-        params.append('hiddenPostIds', hiddenPosts.join(','))
+      if (typeof window !== 'undefined') {
+        const hiddenPosts = JSON.parse(localStorage.getItem('hiddenPosts') || '[]')
+        if (hiddenPosts.length > 0) {
+          params.append('hiddenPostIds', hiddenPosts.join(','))
+        }
       }
 
       const response = await fetch(`/api/recommendations?${params}`)
@@ -459,33 +493,6 @@ export default function HomePage() {
 
   return (
     <>
-      <Head>
-        <title>YapGrid - The heart of the internet</title>
-        <meta name="description" content="YapGrid is where millions of people gather for conversations about the things they care about, in over 100000 subreddit communities. Discover trending content, join discussions, and share your thoughts with the world." />
-        <meta name="keywords" content="reddit, social media, content, discovery, community, discussions, trending, posts, videos, images, subreddit, communities, social network, user generated content, memes, news, entertainment, technology, gaming" />
-        
-        {/* Open Graph / Facebook */}
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://yapgrid.com/" />
-        <meta property="og:title" content="YapGrid - The heart of the internet" />
-        <meta property="og:description" content="YapGrid is where millions of people gather for conversations about the things they care about, in over 100000 subreddit communities." />
-        <meta property="og:image" content="https://yapgrid.com/og-image.jpg" />
-        <meta property="og:site_name" content="YapGrid" />
-        
-        {/* Twitter */}
-        <meta property="twitter:card" content="summary_large_image" />
-        <meta property="twitter:url" content="https://yapgrid.com/" />
-        <meta property="twitter:title" content="YapGrid - The heart of the internet" />
-        <meta property="twitter:description" content="YapGrid is where millions of people gather for conversations about the things they care about, in over 100000 subreddit communities." />
-        <meta property="twitter:image" content="https://yapgrid.com/twitter-image.jpg" />
-        
-        {/* Additional SEO meta tags */}
-        <meta name="robots" content="index, follow" />
-        <meta name="googlebot" content="index, follow" />
-        <meta name="author" content="YapGrid Team" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link rel="canonical" href="https://yapgrid.com/" />
-      </Head>
       
       {/* Structured Data */}
       <script

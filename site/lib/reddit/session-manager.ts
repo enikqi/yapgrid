@@ -52,7 +52,7 @@ export class RedditSessionManager {
   constructor() {
     this.sessionConfig = {
       sessionCookie: config.REDDIT_SESSION_COOKIE || '',
-      userAgent: 'PinReddit/1.0.0',
+      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       enabled: Boolean(config.REDDIT_SESSION_COOKIE),
     }
   }
@@ -175,10 +175,19 @@ export class RedditSessionManager {
       url += `&t=${campaign.timeRange}`
     }
 
+    // Ensure cookie format is correct
+    let cookieValue = this.sessionConfig.sessionCookie
+    if (cookieValue && !cookieValue.startsWith('reddit_session=')) {
+      cookieValue = `reddit_session=${cookieValue}`
+    }
+    
     const response = await axios.get(url, {
       headers: {
         'User-Agent': this.sessionConfig.userAgent,
-        'Cookie': this.sessionConfig.sessionCookie,
+        'Cookie': cookieValue,
+        'Accept': 'application/json',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Referer': `https://www.reddit.com/r/${subreddit}/`,
       },
       timeout: 15000,
     })

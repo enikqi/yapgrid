@@ -6,10 +6,10 @@ import { prisma } from '@/lib/db/prisma'
 
 
 // Generate metadata for each post
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   try {
     // Extract the post ID from params
-    const postId = params.id
+    const { id: postId } = await params
     
     // Direct database query to avoid infinite loops
     const post = await prisma.post.findUnique({
@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     // Determine post type and content
     const title = post.title || `Post by u/${post.author} | YapGrid`
     const description = post.title || 'Check out this post on YapGrid'
-    const postUrl = `https://yapgrid.com/post/${params.id}`
+    const postUrl = `https://yapgrid.com/post/${postId}`
     
     // Build base metadata
     const metadata: Metadata = {
@@ -130,10 +130,10 @@ export async function generateStaticParams() {
   }
 }
 
-export default async function PostPage({ params }: { params: { id: string } }) {
+export default async function PostPage({ params }: { params: Promise<{ id: string }> }) {
   try {
     // Extract the post ID from params
-    const postId = params.id
+    const { id: postId } = await params
     
     // Get the post with its assets and author
     const post = await prisma.post.findUnique({

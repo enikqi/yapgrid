@@ -11,13 +11,14 @@ export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.email) {
-      logger.warn({ session }, 'No session or email found')
+      logger.warn('No session or email found', { session })
       return NextResponse.json({ success: false, error: 'No session found' }, { status: 401 })
     }
     
     // Check if user is admin
-    if (!session.user.isAdmin) {
-      logger.warn({ email: session.user.email, isAdmin: session.user.isAdmin }, 'Unauthorized access attempt')
+    const user = session.user as any
+    if (!user.isAdmin) {
+      logger.warn('Unauthorized access attempt', { email: session.user.email, isAdmin: user.isAdmin })
       return NextResponse.json({ success: false, error: 'Admin access required' }, { status: 403 })
     }
 
@@ -45,7 +46,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get posts with pagination
-    logger.info({ where, skip, limit }, 'Fetching posts from database')
+    logger.info('Fetching posts from database', { where, skip, limit })
     
     const [posts, totalPosts] = await Promise.all([
       prisma.post.findMany({
@@ -69,7 +70,7 @@ export async function GET(request: NextRequest) {
       prisma.post.count({ where })
     ])
 
-    logger.info({ postsCount: posts.length, totalPosts }, 'Posts fetched successfully')
+    logger.info('Posts fetched successfully', { postsCount: posts.length, totalPosts })
 
     const totalPages = Math.ceil(totalPosts / limit)
 
@@ -85,7 +86,7 @@ export async function GET(request: NextRequest) {
     })
 
   } catch (error) {
-    logger.error({ error }, 'Failed to fetch posts')
+    logger.error('Failed to fetch posts', { error })
     return NextResponse.json({ 
       success: false, 
       error: 'Failed to fetch posts' 

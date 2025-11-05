@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    logger.info({ userId: user.id, username: user.username }, 'User created successfully')
+    logger.info('User created successfully', { userId: user.id, username: user.username })
 
     return NextResponse.json({
       success: true,
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    logger.error({ error }, 'Signup failed')
+    logger.error('Signup failed', { error })
     return NextResponse.json({
       success: false,
       error: 'Failed to create account'

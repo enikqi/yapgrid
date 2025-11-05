@@ -17,7 +17,7 @@ export default async function AdminLayout({
   }
 
   // Check if user is admin
-  const isAdmin = session.user?.isAdmin || false
+  const isAdmin = (session.user as any)?.isAdmin || false
 
   if (!isAdmin) {
     redirect('/unauthorized')
@@ -28,8 +28,8 @@ export default async function AdminLayout({
       <AdminHeader user={{ 
         email: session.user?.email || '', 
         name: session.user?.name || '', 
-        isAdmin: session.user?.isAdmin || false 
-      }} />
+        isAdmin: (session.user as any)?.isAdmin || false 
+      } as any} />
       <div className="flex">
         <AdminSidebar />
         <main className="flex-1 p-6">

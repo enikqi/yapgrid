@@ -70,11 +70,11 @@ export async function GET() {
       sessionStatus: 'active' as const // TODO: Implement actual session status
     }
 
-    logger.info({ 
+    logger.info('Reddit stats fetched', { 
       totalSubreddits: stats.totalSubreddits,
       totalPosts: stats.totalPosts,
       publishedPosts: stats.publishedPosts
-    }, 'Reddit stats fetched')
+    })
 
     return NextResponse.json({
       success: true,
@@ -85,7 +85,7 @@ export async function GET() {
     })
 
   } catch (error) {
-    logger.error({ error }, 'Failed to fetch Reddit data')
+    logger.error('Failed to fetch Reddit data', { error })
     return NextResponse.json(
       { success: false, error: 'Failed to fetch Reddit data' },
       { status: 500 }
@@ -151,7 +151,7 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    logger.error({ error }, 'Failed to execute Reddit action')
+    logger.error('Failed to execute Reddit action', { error })
     return NextResponse.json(
       { success: false, error: 'Failed to execute Reddit action' },
       { status: 500 }

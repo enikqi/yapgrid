@@ -43,10 +43,10 @@ export async function GET(request: NextRequest) {
         if (typeof (defaultSettings as any)[setting.key] === 'boolean') {
           (mergedSettings as any)[setting.key] = value === 'true'
         } else if (typeof (defaultSettings as any)[setting.key] === 'number') {
-          (mergedSettings as any)[setting.key] = parseInt(value) || (defaultSettings as any)[setting.key]
+          (mergedSettings as any)[setting.key] = parseInt(String(value || '')) || (defaultSettings as any)[setting.key]
         } else if (setting.key === 'subreddits' || setting.key === 'keywords') {
           try {
-            (mergedSettings as any)[setting.key] = JSON.parse(value)
+            (mergedSettings as any)[setting.key] = JSON.parse(String(value))
           } catch {
             (mergedSettings as any)[setting.key] = (defaultSettings as any)[setting.key]
           }
@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(response)
   } catch (error) {
-    logger.error({ error }, 'Failed to get settings')
+    logger.error('Failed to get settings', { error })
     
     const response: ApiResponse = {
       success: false,
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(response)
   } catch (error) {
-    logger.error({ error }, 'Failed to update settings')
+    logger.error('Failed to update settings', { error })
     
     const response: ApiResponse = {
       success: false,

@@ -1,0 +1,53 @@
+═══════════════════════════════════════════════════════════════
+⚠️  TERMINAL KA PROBLEME - PËRDOR KËTË METODË
+═══════════════════════════════════════════════════════════════
+
+METODA 1: Manual fetch përmes SSH (RECOMMENDED)
+═══════════════════════════════════════════════════════════════
+
+1. Hap një SSH terminal të ri (jo këtu në Cursor):
+
+   ssh -i ~/.ssh/yapgrid.pem ubuntu@18.205.245.96
+
+2. Ekzekuto këto komanda një nga një:
+
+   cd /home/ubuntu/apps/yapgrid/site
+   
+   # Get campaign ID
+   npx prisma db execute --url "$DATABASE_URL" --stdin <<'EOF'
+   SELECT id FROM "Campaign" WHERE LOWER(subreddit) = 'philippines' AND platform = 'REDDIT' ORDER BY "createdAt" DESC LIMIT 1;
+   EOF
+
+3. Merr campaign ID nga output (p.sh: cm123abc456)
+
+4. Fetch posts:
+
+   curl -X POST http://localhost:3002/api/campaigns/[CAMPAIGN_ID]/run
+
+   (Replace [CAMPAIGN_ID] me ID-në që more)
+
+5. Prit 30 sekonda dhe kontrollo:
+
+   https://yapgrid.com/y/Philippines
+
+═══════════════════════════════════════════════════════════════
+
+METODA 2: Automatike - Prit 30 minuta
+═══════════════════════════════════════════════════════════════
+
+Background scheduler fetch-on automatikisht çdo 30 minuta.
+Thjesht prit dhe refresh:
+   https://yapgrid.com/y/Philippines
+
+═══════════════════════════════════════════════════════════════
+
+METODA 3: Browser DevTools (për testing)
+═══════════════════════════════════════════════════════════════
+
+1. Hap: https://yapgrid.com/admin/campaigns
+2. Sign in me admin credentials
+3. Gjej Philippines campaign
+4. Click "Run Now" button
+
+═══════════════════════════════════════════════════════════════
+

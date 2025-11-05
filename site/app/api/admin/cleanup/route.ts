@@ -60,7 +60,7 @@ export async function GET() {
     })
 
   } catch (error) {
-    logger.error({ error }, 'Failed to get cleanup statistics')
+    logger.error(`Failed to get cleanup statistics: ${error}`)
     return NextResponse.json({ 
       success: false, 
       error: 'Failed to get cleanup statistics' 
@@ -195,7 +195,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    logger.info({ results }, 'Database cleanup completed')
+    logger.info('Database cleanup completed', { results })
 
     return NextResponse.json({
       success: true,
@@ -207,7 +207,7 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    logger.error({ error }, 'Failed to perform cleanup')
+    logger.error(`Failed to perform cleanup: ${error}`)
     return NextResponse.json({ 
       success: false, 
       error: 'Failed to perform cleanup' 

@@ -26,17 +26,18 @@ export const metadata: Metadata = {
 }
 
 interface PostsPageProps {
-  searchParams: {
+  searchParams: Promise<{
     page?: string
     sort?: string
     type?: string
-  }
+  }>
 }
 
 export default async function PostsPage({ searchParams }: PostsPageProps) {
-  const page = parseInt(searchParams.page || '1')
-  const sort = searchParams.sort || 'latest'
-  const type = searchParams.type || 'all'
+  const params = await searchParams
+  const page = parseInt(params.page || '1')
+  const sort = params.sort || 'latest'
+  const type = params.type || 'all'
   
   // Structured data for the posts page
   const structuredData = {

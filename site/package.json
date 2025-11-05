@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack -p 3002",
-    "build": "NEXT_DISABLE_ESLINT=1 NEXT_DISABLE_TYPECHECK=1 next build",
+    "build": "NEXT_DISABLE_ESLINT=1 SKIP_ENV_VALIDATION=1 next build --no-lint",
     "start": "NODE_ENV=production next start -p 3002",
     "lint": "eslint",
     "db:push": "prisma db push",
@@ -62,5 +62,9 @@
     "tailwindcss": "^4",
     "tsx": "^4.20.6",
     "typescript": "^5"
+  },
+  "optionalDependencies": {
+    "bufferutil": "^4.0.9",
+    "utf-8-validate": "^6.0.5"
   }
 }
