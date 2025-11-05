@@ -7,9 +7,8 @@ import type { ApiResponse, PaginatedResponse, Post, Asset } from '@/lib/types'
 
 const logger = createLogger('api/posts')
 
-// Cache for 60 seconds
+// Cache for 60 seconds with dynamic query parameters
 export const revalidate = 60
-export const dynamic = 'force-dynamic' // For query parameters
 
 export async function GET(request: NextRequest) {
   try {

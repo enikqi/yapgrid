@@ -7,7 +7,7 @@ const logger = createLogger('api/health')
 export async function GET() {
   try {
     // Test database connection
-    await prisma.$queryRaw`SELECT 1`
+    await prisma.$executeRaw`SELECT 1`
     
     return NextResponse.json({
       status: 'healthy',

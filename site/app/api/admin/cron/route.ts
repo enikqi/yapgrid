@@ -7,6 +7,11 @@ import { promisify } from 'util'
 const logger = createLogger('api/admin/cron')
 const execAsync = promisify(exec)
 
+// Helper function to get valid PIDs from pgrep output
+function getValidPids(stdout: string): string[] {
+  return stdout.trim().split('\n').filter(pid => pid.trim() && /^\d+$/.test(pid))
+}
+
 // GET /api/admin/cron - Get cron job status
 export async function GET() {
   try {
@@ -111,7 +116,7 @@ export async function POST(request: NextRequest) {
         try {
           // Get PIDs of background-scheduler processes on Linux
           const { stdout } = await execAsync('pgrep -f "background-scheduler"')
-          const pids = stdout.trim().split('\n').filter(pid => pid.trim() && /^\d+$/.test(pid))
+          const pids = getValidPids(stdout)
           
           if (pids.length === 0) {
             logger.info('No background-scheduler processes found')
@@ -145,7 +150,7 @@ export async function POST(request: NextRequest) {
           // Stop first - get PIDs and kill them on Linux
           try {
             const { stdout } = await execAsync('pgrep -f "background-scheduler"')
-            const pids = stdout.trim().split('\n').filter(pid => pid.trim() && /^\d+$/.test(pid))
+            const pids = getValidPids(stdout)
             
             if (pids.length === 0) {
               logger.info('No background-scheduler processes found to stop')
