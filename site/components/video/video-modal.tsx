@@ -109,13 +109,43 @@ export function VideoModal({ post, isOpen, onClose }: VideoModalProps) {
     setIsDragging(false)
   }
 
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+      // Also hide the homepage content behind modal
+      const mainContent = document.querySelector('main')
+      if (mainContent) {
+        mainContent.style.overflow = 'hidden'
+      }
+    } else {
+      document.body.style.overflow = 'unset'
+      const mainContent = document.querySelector('main')
+      if (mainContent) {
+        mainContent.style.overflow = 'unset'
+      }
+    }
+    
+    return () => {
+      document.body.style.overflow = 'unset'
+      const mainContent = document.querySelector('main')
+      if (mainContent) {
+        mainContent.style.overflow = 'unset'
+      }
+    }
+  }, [isOpen])
+
   if (!isOpen) return null
 
   return (
     <div 
       ref={containerRef}
-      className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+      className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center p-4"
       onClick={onClose}
+      style={{ 
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)'
+      }}
     >
       <div 
         className={cn(

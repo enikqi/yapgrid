@@ -41,11 +41,6 @@ export default function HomePage() {
   const [filteredPosts, setFilteredPosts] = useState<(Post & { assets: Asset[] })[]>([])
   const [isFiltering, setIsFiltering] = useState(false)
   
-  // Virtual scrolling state
-  const [visibleStartIndex, setVisibleStartIndex] = useState(0)
-  const [visibleEndIndex, setVisibleEndIndex] = useState(20)
-  const ITEMS_PER_PAGE = 20
-
   // Subscription state
   const [subscriptions, setSubscriptions] = useState<Set<string>>(new Set())
   
@@ -55,70 +50,12 @@ export default function HomePage() {
   // Mobile search overlay state
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false)
 
-  // Container ref for virtual scrolling
-  const containerRef = useRef<HTMLDivElement>(null)
-  const ITEM_HEIGHT = 600 // Approximate height of each post card
-
-  // Use all posts for rendering - virtual scrolling was causing ordering issues
+  // Use all posts for rendering - maintaining stable order
   const visiblePosts = useMemo(() => {
     const currentPosts = isSearching ? searchResults : posts
-    // Return all posts to maintain correct order - virtual scrolling disabled temporarily
+    // Return all posts to maintain correct order
     return currentPosts
   }, [posts, searchResults, isSearching])
-
-  // Proper virtual scrolling implementation
-  useEffect(() => {
-    const container = containerRef.current || window
-    if (!container) return
-
-    const handleScroll = () => {
-      const scrollTop = container === window 
-        ? window.pageYOffset || document.documentElement.scrollTop
-        : (container as HTMLDivElement).scrollTop
-      const containerHeight = container === window
-        ? window.innerHeight
-        : (container as HTMLDivElement).clientHeight
-      
-      // Update visible range based on scroll position
-      const startIndex = Math.max(0, Math.floor(scrollTop / ITEM_HEIGHT) - 2) // Buffer of 2 above
-      const endIndex = Math.min(
-        startIndex + Math.ceil(containerHeight / ITEM_HEIGHT) + 4, // Buffer of 4 below
-        posts.length
-      )
-      
-      setVisibleStartIndex(startIndex)
-      setVisibleEndIndex(endIndex)
-      
-      // Load more posts when near bottom
-      const documentHeight = container === window
-        ? document.documentElement.scrollHeight
-        : (container as HTMLDivElement).scrollHeight
-      
-      if (scrollTop + containerHeight >= documentHeight - 1000 && hasMore && !loadMoreLoading) {
-        loadMore()
-      }
-    }
-
-    // Throttle scroll events for better performance
-    let ticking = false
-    const throttledScroll = () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          handleScroll()
-          ticking = false
-        })
-        ticking = true
-      }
-    }
-
-    container.addEventListener('scroll', throttledScroll, { passive: true })
-    // Initial calculation
-    handleScroll()
-    
-    return () => {
-      container.removeEventListener('scroll', throttledScroll)
-    }
-  }, [posts.length, hasMore, loadMoreLoading])
 
   // Avoid preloading images to reduce initial network pressure
   const preloadImages = useCallback((_posts: (Post & { assets: Asset[] })[]) => {
@@ -128,17 +65,17 @@ export default function HomePage() {
   const fetchPosts = useCallback(async (pageNum: number, algorithm: 'personal' | 'latest' | 'trending' = 'latest') => {
     try {
       if (pageNum === 1) {
-      setLoading(true)
+        setLoading(true)
       } else {
         setLoadMoreLoading(true)
       }
       
       const params = new URLSearchParams({
         page: pageNum.toString(),
-        pageSize: '20', // Increased back to 20 for better pagination
+        pageSize: '20',
         algo: algorithm,
         includeNsfw: 'false',
-        status: 'PUBLISHED', // Ensure we only get published posts
+        status: 'PUBLISHED',
       })
 
       // Add hidden post IDs from localStorage for non-signed-in users
@@ -159,13 +96,15 @@ export default function HomePage() {
           // First page - replace all posts and reset scroll
           setPosts(paginatedData.items)
           setAllPosts(paginatedData.items)
+          setPage(1) // Reset page counter
           window.scrollTo(0, 0)
         } else {
-          // Subsequent pages - append new posts, maintain order
+          // Subsequent pages - append new posts, maintain stable order
           setPosts(prevPosts => {
             const existingIds = new Set(prevPosts.map(post => post.id))
             const newUniquePosts = paginatedData.items.filter(post => !existingIds.has(post.id))
-            // Maintain correct order: existing posts first, then new posts
+            // Maintain correct order: existing posts first, then new posts in API order
+            // Use stable sort to preserve order
             const combinedPosts = [...prevPosts, ...newUniquePosts]
             setAllPosts(combinedPosts)
             return combinedPosts
@@ -173,9 +112,13 @@ export default function HomePage() {
         }
         
         setHasMore(paginatedData.hasMore)
+      } else {
+        // Handle error case
+        setHasMore(false)
       }
     } catch (error) {
       console.error('Failed to fetch posts:', error)
+      setHasMore(false)
     } finally {
       setLoading(false)
       setLoadMoreLoading(false)
@@ -337,11 +280,37 @@ export default function HomePage() {
     if (!loading && !loadMoreLoading && hasMore && !isSearching && !isFiltering) {
       setPage(prevPage => {
         const nextPage = prevPage + 1
-        fetchPosts(nextPage, currentAlgorithm)
+        // Use setTimeout to ensure state updates are processed
+        setTimeout(() => {
+          fetchPosts(nextPage, currentAlgorithm)
+        }, 0)
         return nextPage
       })
     }
   }, [loading, loadMoreLoading, hasMore, fetchPosts, currentAlgorithm, isSearching, isFiltering])
+
+  // IntersectionObserver for infinite scroll - better than manual scroll handling
+  const loadMoreSentinelRef = useRef<HTMLDivElement>(null)
+  
+  useEffect(() => {
+    const sentinel = loadMoreSentinelRef.current
+    if (!sentinel || isSearching || isFiltering) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadMoreLoading && !loading) {
+          loadMore()
+        }
+      },
+      { rootMargin: '500px' } // Load more when 500px before bottom
+    )
+
+    observer.observe(sentinel)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [hasMore, loadMoreLoading, loading, isSearching, isFiltering, loadMore])
 
   const loadMoreSearchResults = useCallback(async () => {
     if (!loading && searchHasMore && isSearching) {
@@ -505,7 +474,7 @@ export default function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
       
-      <div className="min-h-screen bg-gray-100 dark:bg-gray-950 overflow-x-hidden">
+      <div className="min-h-screen bg-gray-100 dark:bg-gray-950 overflow-x-hidden" style={{ position: 'relative', zIndex: 1 }}>
         {/* Reddit-style Header */}
         <header className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
           <div className="max-w-7xl mx-auto px-4 h-12 flex items-center justify-between">
@@ -980,15 +949,24 @@ export default function HomePage() {
                 ))}
               </div>
 
-              {/* Load more button */}
+              {/* Load more sentinel for infinite scroll */}
               {!isSearching && !isFiltering && hasMore && (
+                <div ref={loadMoreSentinelRef} className="h-20 flex items-center justify-center mt-6">
+                  {loadMoreLoading && (
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+                  )}
+                </div>
+              )}
+
+              {/* Load more button (fallback) */}
+              {!isSearching && !isFiltering && hasMore && !loadMoreLoading && (
                 <div className="text-center mt-6">
                   <button
                     onClick={loadMore}
                     disabled={loading || loadMoreLoading}
                     className="px-6 py-2 bg-orange-500 text-white rounded-full hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
-                    {loadMoreLoading ? 'Loading...' : 'Load More Posts'}
+                    Load More Posts
                   </button>
                 </div>
               )}
