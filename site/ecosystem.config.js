@@ -3,14 +3,15 @@ module.exports = {
     {
       name: 'yapgrid-nextjs',
       script: 'node_modules/next/dist/bin/next',
-      args: 'start -p 3002',
+      args: 'dev -p 3002',
       cwd: '/home/ubuntu/apps/yapgrid/site',
       instances: 1,
+      exec_mode: 'fork',
       autorestart: true,
       watch: false,
       max_memory_restart: '1G',
       env: {
-        NODE_ENV: 'production',
+        NODE_ENV: 'development',
         PORT: 3002
       },
       error_file: '/home/ubuntu/apps/yapgrid/logs/web-error.log',
