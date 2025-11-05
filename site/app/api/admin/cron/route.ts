@@ -114,11 +114,34 @@ export async function POST(request: NextRequest) {
           const pids = stdout.trim().split('\n').filter(pid => pid.trim())
           
           if (pids.length > 0) {
-            // Kill each process
+            // Kill each process with graceful shutdown
             for (const pid of pids) {
               try {
-                await execAsync(`kill -9 ${pid}`)
-                logger.info(`Killed background-scheduler process with PID ${pid}`)
+                // Attempt graceful shutdown with SIGTERM
+                await execAsync(`kill ${pid}`)
+                logger.info(`Sent SIGTERM to background-scheduler process with PID ${pid}`)
+                
+                // Wait up to 2 seconds for process to exit
+                let exited = false
+                for (let i = 0; i < 4; i++) { // 4 x 500ms = 2s
+                  await new Promise(resolve => setTimeout(resolve, 500))
+                  try {
+                    await execAsync(`ps -p ${pid}`)
+                    // If no error, process is still running
+                  } catch (psError) {
+                    // ps returns error if process does not exist
+                    exited = true
+                    break
+                  }
+                }
+                
+                if (!exited) {
+                  // Process did not exit, force kill
+                  await execAsync(`kill -9 ${pid}`)
+                  logger.info(`Force killed background-scheduler process with PID ${pid}`)
+                } else {
+                  logger.info(`Gracefully stopped background-scheduler process with PID ${pid}`)
+                }
               } catch (killError) {
                 logger.warn(`Failed to kill process ${pid}:`, killError)
               }
@@ -142,8 +165,31 @@ export async function POST(request: NextRequest) {
           
           for (const pid of pids) {
             try {
-              await execAsync(`kill -9 ${pid}`)
-              logger.info(`Killed background-scheduler process with PID ${pid}`)
+              // Attempt graceful shutdown with SIGTERM
+              await execAsync(`kill ${pid}`)
+              logger.info(`Sent SIGTERM to background-scheduler process with PID ${pid}`)
+              
+              // Wait up to 2 seconds for process to exit
+              let exited = false
+              for (let i = 0; i < 4; i++) { // 4 x 500ms = 2s
+                await new Promise(resolve => setTimeout(resolve, 500))
+                try {
+                  await execAsync(`ps -p ${pid}`)
+                  // If no error, process is still running
+                } catch (psError) {
+                  // ps returns error if process does not exist
+                  exited = true
+                  break
+                }
+              }
+              
+              if (!exited) {
+                // Process did not exit, force kill
+                await execAsync(`kill -9 ${pid}`)
+                logger.info(`Force killed background-scheduler process with PID ${pid}`)
+              } else {
+                logger.info(`Gracefully stopped background-scheduler process with PID ${pid}`)
+              }
             } catch (killError) {
               logger.warn(`Failed to kill process ${pid}:`, killError)
             }
