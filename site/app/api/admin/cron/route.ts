@@ -15,13 +15,13 @@ export async function GET() {
     let schedulerPid = null
     
     try {
-      // Use wmic to get more detailed process information
-      const { stdout } = await execAsync('wmic process where "name=\'node.exe\'" get ProcessId,CommandLine')
-      const lines = stdout.split('\n').filter(line => line.includes('background-scheduler'))
+      // Use ps to get process information on Linux
+      const { stdout } = await execAsync('ps aux | grep "[b]ackground-scheduler"')
+      const lines = stdout.split('\n').filter(line => line.trim())
       
       if (lines.length > 0) {
         schedulerStatus = 'running'
-        // Get the first PID found
+        // Get the first PID found (second column in ps aux)
         const pidMatch = lines[0].match(/\s+(\d+)\s+/)
         if (pidMatch) {
           schedulerPid = pidMatch[1]
@@ -64,13 +64,11 @@ export async function GET() {
     })
 
   } catch (error) {
-    logger.error({ error }, 'Failed to get cron status')
+    logger.error('Failed to get cron status', { error })
     return NextResponse.json({ 
       success: false, 
       error: 'Failed to get cron status' 
     }, { status: 500 })
-  } finally {
-    await prisma.$disconnect()
   }
 }
 
@@ -111,22 +109,18 @@ export async function POST(request: NextRequest) {
 
       case 'stop_scheduler':
         try {
-          // First get the PID of background-scheduler processes
-          const { stdout } = await execAsync('wmic process where "name=\'node.exe\'" get ProcessId,CommandLine')
-          const lines = stdout.split('\n').filter(line => line.includes('background-scheduler'))
+          // Get PIDs of background-scheduler processes on Linux
+          const { stdout } = await execAsync('pgrep -f "background-scheduler"')
+          const pids = stdout.trim().split('\n').filter(pid => pid.trim())
           
-          if (lines.length > 0) {
-            // Extract PIDs and kill them
-            for (const line of lines) {
-              const pidMatch = line.match(/\s+(\d+)\s+/)
-              if (pidMatch) {
-                const pid = pidMatch[1]
-                try {
-                  await execAsync(`taskkill /F /PID ${pid}`)
-                  logger.info(`Killed background-scheduler process with PID ${pid}`)
-                } catch (killError) {
-                  logger.warn(`Failed to kill process ${pid}:`, killError)
-                }
+          if (pids.length > 0) {
+            // Kill each process
+            for (const pid of pids) {
+              try {
+                await execAsync(`kill -9 ${pid}`)
+                logger.info(`Killed background-scheduler process with PID ${pid}`)
+              } catch (killError) {
+                logger.warn(`Failed to kill process ${pid}:`, killError)
               }
             }
             result.message = 'Background scheduler stopped successfully'
@@ -142,20 +136,16 @@ export async function POST(request: NextRequest) {
 
       case 'restart_scheduler':
         try {
-          // Stop first - get PIDs and kill them
-          const { stdout } = await execAsync('wmic process where "name=\'node.exe\'" get ProcessId,CommandLine')
-          const lines = stdout.split('\n').filter(line => line.includes('background-scheduler'))
+          // Stop first - get PIDs and kill them on Linux
+          const { stdout } = await execAsync('pgrep -f "background-scheduler"')
+          const pids = stdout.trim().split('\n').filter(pid => pid.trim())
           
-          for (const line of lines) {
-            const pidMatch = line.match(/\s+(\d+)\s+/)
-            if (pidMatch) {
-              const pid = pidMatch[1]
-              try {
-                await execAsync(`taskkill /F /PID ${pid}`)
-                logger.info(`Killed background-scheduler process with PID ${pid}`)
-              } catch (killError) {
-                logger.warn(`Failed to kill process ${pid}:`, killError)
-              }
+          for (const pid of pids) {
+            try {
+              await execAsync(`kill -9 ${pid}`)
+              logger.info(`Killed background-scheduler process with PID ${pid}`)
+            } catch (killError) {
+              logger.warn(`Failed to kill process ${pid}:`, killError)
             }
           }
           
@@ -193,7 +183,7 @@ export async function POST(request: NextRequest) {
         })
         
         result.message = `${jobType} ${newValue ? 'enabled' : 'disabled'} successfully`
-        logger.info({ jobType, enabled: newValue }, 'Job toggled')
+        logger.info('Job toggled', { jobType, enabled: newValue })
         break
 
       default:
@@ -213,12 +203,10 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    logger.error({ error }, 'Failed to control cron jobs')
+    logger.error('Failed to control cron jobs', { error })
     return NextResponse.json({ 
       success: false, 
       error: 'Failed to control cron jobs' 
     }, { status: 500 })
-  } finally {
-    await prisma.$disconnect()
   }
 }

@@ -172,13 +172,11 @@ export async function GET() {
     })
 
   } catch (error) {
-    logger.error({ error }, 'Failed to fetch jobs')
+    logger.error('Failed to fetch jobs', { error })
     return NextResponse.json({ 
       success: false, 
       error: 'Failed to fetch jobs' 
     }, { status: 500 })
-  } finally {
-    await prisma.$disconnect()
   }
 }
 
@@ -249,7 +247,7 @@ export async function POST(request: NextRequest) {
       create: { key: settingKey, value: enabled.toString() }
     })
 
-    logger.info({ jobId, action, enabled }, 'Job status updated')
+    logger.info('Job status updated', { jobId, action, enabled })
 
     return NextResponse.json({
       success: true,
@@ -262,12 +260,10 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    logger.error({ error }, 'Failed to update job status')
+    logger.error('Failed to update job status', { error })
     return NextResponse.json({ 
       success: false, 
       error: 'Failed to update job status' 
     }, { status: 500 })
-  } finally {
-    await prisma.$disconnect()
   }
 }

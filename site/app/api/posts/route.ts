@@ -107,9 +107,6 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Test database connection first
-    await prisma.$connect()
-
     // Get posts with assets
     const [posts, total] = await Promise.all([
       prisma.post.findMany({
@@ -171,7 +168,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(response)
   } catch (error) {
-    logger.error({ error }, 'Failed to fetch posts')
+    logger.error('Failed to fetch posts', { error })
     
     const response: ApiResponse = {
       success: false,
@@ -224,7 +221,7 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    logger.info({ postId: post.id, redditId }, 'Post created')
+    logger.info('Post created', { postId: post.id, redditId })
 
     const response: ApiResponse<Post> = {
       success: true,
@@ -233,7 +230,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(response, { status: 201 })
   } catch (error) {
-    logger.error({ error }, 'Failed to create post')
+    logger.error('Failed to create post', { error })
     
     const response: ApiResponse = {
       success: false,
