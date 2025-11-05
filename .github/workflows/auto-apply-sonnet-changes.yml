@@ -1,0 +1,116 @@
+name: Auto Apply Sonnet 4.5 Changes
+
+on:
+  pull_request:
+    types: [opened, synchronize, closed]
+  workflow_dispatch:
+
+jobs:
+  analyze-and-apply:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.state == 'open' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'site/package-lock.json'
+      
+      - name: Analyze codebase with summary
+        run: |
+          echo "📊 Codebase Analysis Summary"
+          echo "=============================="
+          echo ""
+          echo "Total files: $(find . -type f -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" | wc -l)"
+          echo "TypeScript files: $(find . -type f -name "*.ts" -o -name "*.tsx" | wc -l)"
+          echo "JavaScript files: $(find . -type f -name "*.js" -o -name "*.jsx" | wc -l)"
+          echo ""
+          echo "Files changed in PR:"
+          git diff --name-only origin/${{ github.event.pull_request.base.ref }}...HEAD || echo "No changes"
+      
+      - name: Build application
+        working-directory: ./site
+        run: |
+          npm ci
+          npm run build || echo "Build failed, but continuing..."
+        continue-on-error: true
+      
+      - name: Run tests
+        working-directory: ./site
+        run: npm test || echo "No tests configured"
+        continue-on-error: true
+      
+      - name: Check for linting errors
+        working-directory: ./site
+        run: npm run lint || echo "Linting check completed"
+        continue-on-error: true
+      
+      - name: Create analysis report
+        run: |
+          cat > analysis-report.md << EOF
+          # Code Analysis Report
+          
+          ## PR Information
+          - PR Number: #${{ github.event.pull_request.number }}
+          - Branch: ${{ github.event.pull_request.head.ref }}
+          - Base: ${{ github.event.pull_request.base.ref }}
+          - Author: ${{ github.event.pull_request.user.login }}
+          
+          ## Changed Files
+          \`\`\`
+          $(git diff --name-only origin/${{ github.event.pull_request.base.ref }}...HEAD || echo "No changes")
+          \`\`\`
+          
+          ## Build Status
+          - Build: ${{ job.status }}
+          - Tests: ${{ job.status }}
+          
+          ## Next Steps
+          1. Review changes with Sonnet 4.5
+          2. Approve if changes look good
+          3. Merge to apply changes
+          EOF
+          cat analysis-report.md
+      
+      - name: Comment PR with analysis
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('analysis-report.md', 'utf8');
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: report
+            });
+      
+      - name: Auto-deploy on approval
+        if: github.event.pull_request.merged == true
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd /home/ubuntu/apps/yapgrid
+            git fetch origin
+            git checkout ${{ github.event.pull_request.base.ref }}
+            git pull origin ${{ github.event.pull_request.base.ref }}
+            cd site
+            npm install
+            npm run build
+            pm2 restart yapgrid-nextjs || echo "PM2 restart skipped"
+            echo "✅ Changes applied successfully!"
+

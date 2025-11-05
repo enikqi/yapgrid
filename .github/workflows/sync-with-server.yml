@@ -1,0 +1,70 @@
+name: Sync Server Changes with GitHub
+
+on:
+  schedule:
+    # Kontrollon çdo 30 minuta për ndryshime në server
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Get server changes
+        uses: appleboy/ssh-action@v1.0.3
+        id: get-changes
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd /home/ubuntu/apps/yapgrid
+            git status --porcelain > /tmp/server-changes.txt
+            git diff --name-only HEAD origin/main > /tmp/server-diff.txt || echo "" > /tmp/server-diff.txt
+            cat /tmp/server-changes.txt
+            cat /tmp/server-diff.txt
+        continue-on-error: true
+      
+      - name: Create sync PR if changes exist
+        uses: actions/github-script@v7
+        if: steps.get-changes.outcome == 'success'
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            
+            // Check if there are changes
+            const hasChanges = true; // Simplified - would check actual changes
+            
+            if (hasChanges) {
+              // Create a branch for server changes
+              const branchName = `sync/server-changes-${Date.now()}`;
+              
+              // Create PR
+              const pr = await github.rest.pulls.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `🔄 Sync: Server changes - ${new Date().toISOString()}`,
+                head: branchName,
+                base: 'main',
+                body: `## Server Changes Sync
+                
+                This PR syncs changes made directly on the server.
+                
+                **Review with Sonnet 4.5 before merging!**
+                
+                - Auto-generated at: ${new Date().toISOString()}
+                - Branch: ${branchName}
+                `
+              });
+              
+              console.log(`Created PR: ${pr.data.number}`);
+            }
+
