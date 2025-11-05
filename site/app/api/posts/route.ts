@@ -7,6 +7,10 @@ import type { ApiResponse, PaginatedResponse, Post, Asset } from '@/lib/types'
 
 const logger = createLogger('api/posts')
 
+// Cache for 60 seconds
+export const revalidate = 60
+export const dynamic = 'force-dynamic' // For query parameters
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
@@ -111,8 +115,37 @@ export async function GET(request: NextRequest) {
     const [posts, total] = await Promise.all([
       prisma.post.findMany({
         where,
-        include: {
-          assets: true,
+        select: {
+          id: true,
+          title: true,
+          redditId: true,
+          author: true,
+          subreddit: true,
+          url: true,
+          permalink: true,
+          createdAt: true,
+          createdUtc: true,
+          updatedAt: true,
+          publishedAt: true,
+          status: true,
+          score: true,
+          commentsCount: true,
+          nsfw: true,
+          preview: true,
+          assets: {
+            select: {
+              id: true,
+              type: true,
+              url: true,
+              storage: true,
+              pathOrKey: true,
+              width: true,
+              height: true,
+              durationSec: true,
+              filesize: true,
+              mimeType: true,
+            },
+          },
         },
         orderBy: (() => {
           switch (sortBy) {

@@ -221,6 +221,7 @@ model Post {
   postHistory        PostHistory[]
   savedPosts         SavedPost[]
 
+  @@index([createdAt(sort: Desc)])
   @@index([status])
   @@index([subreddit])
   @@index([createdUtc])
@@ -246,6 +247,7 @@ model Asset {
   updatedAt   DateTime    @updatedAt
   post        Post        @relation(fields: [postId], references: [id], onDelete: Cascade)
 
+  @@index([postId])
   @@index([postId, type])
 }
 
