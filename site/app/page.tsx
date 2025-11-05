@@ -59,11 +59,12 @@ export default function HomePage() {
   const containerRef = useRef<HTMLDivElement>(null)
   const ITEM_HEIGHT = 600 // Approximate height of each post card
 
-  // Virtual scrolling - only render visible posts
+  // Use all posts for rendering - virtual scrolling was causing ordering issues
   const visiblePosts = useMemo(() => {
     const currentPosts = isSearching ? searchResults : posts
-    return currentPosts.slice(visibleStartIndex, visibleEndIndex)
-  }, [posts, searchResults, isSearching, visibleStartIndex, visibleEndIndex])
+    // Return all posts to maintain correct order - virtual scrolling disabled temporarily
+    return currentPosts
+  }, [posts, searchResults, isSearching])
 
   // Proper virtual scrolling implementation
   useEffect(() => {
@@ -134,9 +135,10 @@ export default function HomePage() {
       
       const params = new URLSearchParams({
         page: pageNum.toString(),
-        pageSize: '15', // Reduced from 20 to 15 for faster loading
+        pageSize: '20', // Increased back to 20 for better pagination
         algo: algorithm,
         includeNsfw: 'false',
+        status: 'PUBLISHED', // Ensure we only get published posts
       })
 
       // Add hidden post IDs from localStorage for non-signed-in users
@@ -154,15 +156,18 @@ export default function HomePage() {
         const paginatedData = data.data as PaginatedResponse<Post & { assets: Asset[] }>
         
         if (pageNum === 1) {
+          // First page - replace all posts and reset scroll
           setPosts(paginatedData.items)
-          setAllPosts(paginatedData.items) // Store all posts for search
+          setAllPosts(paginatedData.items)
+          window.scrollTo(0, 0)
         } else {
-          // Prevent duplicates by checking existing post IDs
+          // Subsequent pages - append new posts, maintain order
           setPosts(prevPosts => {
             const existingIds = new Set(prevPosts.map(post => post.id))
             const newUniquePosts = paginatedData.items.filter(post => !existingIds.has(post.id))
+            // Maintain correct order: existing posts first, then new posts
             const combinedPosts = [...prevPosts, ...newUniquePosts]
-            setAllPosts(combinedPosts) // Update all posts
+            setAllPosts(combinedPosts)
             return combinedPosts
           })
         }
@@ -964,11 +969,11 @@ export default function HomePage() {
               </div>
               
               <div className="space-y-3">
-                {visiblePosts.map((post, index) => (
+                {visiblePosts.map((post) => (
                   <PostCard
-                    key={`${post.id}-${index}`}
+                    key={post.id}
                     post={post}
-            onVideoPlay={setSelectedPost}
+                    onVideoPlay={setSelectedPost}
                     onPostDelete={handlePostDelete}
                     showPlayButton={true}
                   />
