@@ -18,9 +18,12 @@ export async function GET(request: NextRequest) {
     // Read all files in the media directory
     const files = await readdir(mediaDir)
     
+    // Filter out .gitkeep and other hidden files
+    const visibleFiles = files.filter(filename => !filename.startsWith('.'))
+    
     // Get file stats for each file
     const fileDetails = await Promise.all(
-      files.map(async (filename) => {
+      visibleFiles.map(async (filename) => {
         const filepath = join(mediaDir, filename)
         const stats = await stat(filepath)
         
