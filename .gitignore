@@ -38,8 +38,10 @@ debug.log
 *.zip
 
 # big local data
-site/media/
-media/
+# Allow media directory structure but ignore uploaded files
+# Note: Using trailing slash to only match directories, not files/folders containing 'media' in path
+site/public/media/*
+!site/public/media/.gitkeep
 chrome-user-data/
 .dev.db
 swapfile

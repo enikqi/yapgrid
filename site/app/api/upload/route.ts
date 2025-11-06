@@ -15,8 +15,8 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
-    // All files go to media directory
-    const uploadDir = 'media'
+    // All files go to public/media directory so they're accessible via URLs
+    const uploadDir = join('public', 'media')
 
     // Ensure directory exists
     const uploadPath = join(process.cwd(), uploadDir)
@@ -31,8 +31,8 @@ export async function POST(request: NextRequest) {
     // Write file
     await writeFile(filepath, buffer)
 
-    // Return file info
-    const fileUrl = `/${uploadDir}/${filename}`
+    // Return file info (URLs in Next.js don't include 'public' - files in public/ are served from root)
+    const fileUrl = `/media/${filename}`
     
     return NextResponse.json({
       success: true,
