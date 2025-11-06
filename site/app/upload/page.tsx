@@ -45,16 +45,7 @@ export default function UploadPage() {
     setUploading(false)
     
     // Reload all files after upload completes
-    try {
-      const response = await fetch('/api/media')
-      const data = await response.json()
-      
-      if (data.success) {
-        setUploadedFiles(data.files)
-      }
-    } catch (error) {
-      console.error('Failed to reload files:', error)
-    }
+    await loadAllFiles()
   }
 
   const handleDrop = (e: React.DragEvent) => {
@@ -96,25 +87,26 @@ export default function UploadPage() {
     return <File className="w-5 h-5 text-gray-500" />
   }
 
+  // Reusable function to load all files from the server
+  const loadAllFiles = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/media')
+      const data = await response.json()
+      
+      if (data.success) {
+        setUploadedFiles(data.files)
+      }
+    } catch (error) {
+      console.error('Failed to load files:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   // Load all existing files on mount
   useEffect(() => {
-    const loadExistingFiles = async () => {
-      try {
-        setLoading(true)
-        const response = await fetch('/api/media')
-        const data = await response.json()
-        
-        if (data.success) {
-          setUploadedFiles(data.files)
-        }
-      } catch (error) {
-        console.error('Failed to load existing files:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadExistingFiles()
+    loadAllFiles()
   }, [])
 
   return (

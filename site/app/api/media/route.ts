@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { readdir, stat } from 'fs/promises'
 import { join } from 'path'
 import { existsSync } from 'fs'
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const mediaDir = join(process.cwd(), 'public', 'media')
     
