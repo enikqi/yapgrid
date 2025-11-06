@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Upload, File, Video, Image, CheckCircle, AlertCircle } from 'lucide-react'
 
 interface UploadedFile {
@@ -10,12 +10,14 @@ interface UploadedFile {
   type: string
   url: string
   path: string
+  uploadedAt?: string
 }
 
 export default function UploadPage() {
   const [uploading, setUploading] = useState(false)
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
   const [dragActive, setDragActive] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   const handleFileUpload = async (files: FileList) => {
     setUploading(true)
@@ -32,9 +34,7 @@ export default function UploadPage() {
 
         const result = await response.json()
         
-        if (result.success) {
-          setUploadedFiles(prev => [...prev, result.file])
-        } else {
+        if (!result.success) {
           console.error('Upload failed:', result.message)
         }
       } catch (error) {
@@ -43,6 +43,18 @@ export default function UploadPage() {
     }
     
     setUploading(false)
+    
+    // Reload all files after upload completes
+    try {
+      const response = await fetch('/api/media')
+      const data = await response.json()
+      
+      if (data.success) {
+        setUploadedFiles(data.files)
+      }
+    } catch (error) {
+      console.error('Failed to reload files:', error)
+    }
   }
 
   const handleDrop = (e: React.DragEvent) => {
@@ -83,6 +95,27 @@ export default function UploadPage() {
     if (type.startsWith('image/')) return <Image className="w-5 h-5 text-green-500" />
     return <File className="w-5 h-5 text-gray-500" />
   }
+
+  // Load all existing files on mount
+  useEffect(() => {
+    const loadExistingFiles = async () => {
+      try {
+        setLoading(true)
+        const response = await fetch('/api/media')
+        const data = await response.json()
+        
+        if (data.success) {
+          setUploadedFiles(data.files)
+        }
+      } catch (error) {
+        console.error('Failed to load existing files:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadExistingFiles()
+  }, [])
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-950">
@@ -144,11 +177,19 @@ export default function UploadPage() {
           </div>
         )}
 
+        {/* Loading indicator */}
+        {loading && uploadedFiles.length === 0 && (
+          <div className="mt-6 text-center">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">Loading files...</p>
+          </div>
+        )}
+
         {/* Uploaded Files */}
         {uploadedFiles.length > 0 && (
           <div className="mt-8">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
-              Uploaded Files ({uploadedFiles.length})
+              All Uploaded Files ({uploadedFiles.length})
             </h2>
             
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
