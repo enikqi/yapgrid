@@ -1,0 +1,3 @@
+# Build artifacts — the template itself is tracked in lumina-template/
+*.zip
+*.tar.gz
