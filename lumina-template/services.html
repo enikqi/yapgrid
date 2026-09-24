@@ -1,0 +1,656 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#0a0a0c" />
+
+<title>Services — Lumina</title>
+<meta name="description" content="Brand identity, product design, web engineering and design systems — delivered end to end." />
+<link rel="canonical" href="https://example.com/services.html" />
+
+<!-- Open Graph -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Lumina" />
+<meta property="og:title" content="Services — Lumina" />
+<meta property="og:description" content="Brand identity, product design, web engineering and design systems — delivered end to end." />
+<meta property="og:url" content="https://example.com/services.html" />
+<meta property="og:image" content="https://example.com/assets/img/og.jpg" />
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Services — Lumina" />
+<meta name="twitter:description" content="Brand identity, product design, web engineering and design systems — delivered end to end." />
+<meta name="twitter:image" content="https://example.com/assets/img/og.jpg" />
+
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml" />
+
+<!-- Fonts: self-hosted (SIL Open Font License) -->
+<link rel="preload" href="assets/fonts/syne-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="assets/fonts/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="stylesheet" href="assets/css/fonts.css" />
+
+<!-- Vendor CSS -->
+<link rel="stylesheet" href="assets/vendor/bootstrap.min.css" />
+<link rel="stylesheet" href="assets/vendor/swiper-bundle.min.css" />
+
+<!-- Template CSS -->
+<link rel="stylesheet" href="assets/css/style.css" />
+
+<!-- Set the stored theme before first paint so there is no flash -->
+<script>
+  (function () {
+    try {
+      var t = localStorage.getItem("lumina-theme");
+      if (t) document.documentElement.setAttribute("data-theme", t);
+    } catch (e) {}
+  })();
+</script>
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Lumina",
+    "url": "https://example.com",
+    "description": "Brand identity, product design, web engineering and design systems — delivered end to end.",
+    "sameAs": [
+      "https://example.com",
+      "https://example.com",
+      "https://example.com"
+    ]
+  }
+</script>
+</head>
+<body data-page="services.html">
+
+<a class="lu-skip" href="#main">Skip to content</a>
+
+<div class="lu-preloader" aria-hidden="true">
+  <div class="text-center">
+    <div class="lu-preloader__mark">Lumina<span class="lu-accent">.</span></div>
+    <div class="lu-preloader__bar"><span></span></div>
+  </div>
+</div>
+
+<div class="lu-grain" aria-hidden="true"></div>
+<div class="lu-progress" aria-hidden="true"></div>
+<div class="lu-cursor" aria-hidden="true"></div>
+<div class="lu-cursor-dot" aria-hidden="true"></div>
+
+<header class="lu-nav">
+  <div class="container">
+    <div class="lu-nav__inner">
+      <a class="lu-brand" href="index.html" aria-label="Lumina — home">
+        Lumina<span class="lu-brand__dot" aria-hidden="true"></span>
+      </a>
+
+      <nav aria-label="Primary">
+        <ul class="lu-menu">
+          <li data-nav="index.html home-portfolio.html">
+            <a href="index.html"
+              >Home <i data-lucide="chevron-down" style="width:14px"></i
+            ></a>
+            <ul class="lu-drop">
+              <li><a href="index.html">Home — Agency</a></li>
+              <li><a href="home-portfolio.html">Home — Portfolio</a></li>
+            </ul>
+          </li>
+          <li data-nav="about.html"><a href="about.html">About</a></li>
+          <li class="is-current" data-nav="services.html service-details.html">
+            <a href="services.html"
+              >Services <i data-lucide="chevron-down" style="width:14px"></i
+            ></a>
+            <ul class="lu-drop">
+              <li><a href="services.html">All Services</a></li>
+              <li><a href="service-details.html">Service Details</a></li>
+            </ul>
+          </li>
+          <li data-nav="portfolio.html portfolio-details.html">
+            <a href="portfolio.html"
+              >Work <i data-lucide="chevron-down" style="width:14px"></i
+            ></a>
+            <ul class="lu-drop">
+              <li><a href="portfolio.html">Portfolio Grid</a></li>
+              <li><a href="portfolio-details.html">Project Details</a></li>
+            </ul>
+          </li>
+          <li data-nav="team.html team-details.html pricing.html faq.html 404.html coming-soon.html">
+            <a href="team.html"
+              >Pages <i data-lucide="chevron-down" style="width:14px"></i
+            ></a>
+            <ul class="lu-drop">
+              <li><a href="team.html">Team</a></li>
+              <li><a href="team-details.html">Team Details</a></li>
+              <li><a href="pricing.html">Pricing</a></li>
+              <li><a href="faq.html">FAQ</a></li>
+              <li><a href="404.html">404 Error</a></li>
+              <li><a href="coming-soon.html">Coming Soon</a></li>
+            </ul>
+          </li>
+          <li data-nav="blog.html blog-details.html">
+            <a href="blog.html"
+              >Blog <i data-lucide="chevron-down" style="width:14px"></i
+            ></a>
+            <ul class="lu-drop">
+              <li><a href="blog.html">Blog Grid</a></li>
+              <li><a href="blog-details.html">Article</a></li>
+            </ul>
+          </li>
+          <li data-nav="contact.html"><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+
+      <div class="lu-nav__actions">
+        <button
+          class="lu-icon-btn"
+          data-theme-toggle
+          type="button"
+          aria-label="Switch colour theme"
+        >
+          <i data-lucide="sun-moon"></i>
+        </button>
+
+        <a class="lu-btn lu-btn--sm lu-nav__cta lu-btn--auto" href="contact.html">
+          Start a project
+          <i data-lucide="arrow-up-right" class="lu-btn__icon"></i>
+        </a>
+
+        <button
+          class="lu-burger"
+          type="button"
+          aria-label="Open menu"
+          aria-expanded="false"
+          aria-controls="lu-drawer"
+        >
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="lu-drawer" id="lu-drawer">
+  <nav aria-label="Mobile">
+    <ul class="lu-drawer__list">
+      <li>
+        <a href="index.html"
+          >Home
+          <button
+            class="lu-drawer__toggle"
+            type="button"
+            aria-label="Toggle submenu"
+            aria-expanded="false"
+          >
+            <i data-lucide="chevron-down"></i></button
+        ></a>
+        <ul class="lu-drawer__sub">
+          <li><a href="index.html">Home — Agency</a></li>
+          <li><a href="home-portfolio.html">Home — Portfolio</a></li>
+        </ul>
+      </li>
+      <li><a href="about.html">About</a></li>
+      <li>
+        <a href="services.html"
+          >Services
+          <button
+            class="lu-drawer__toggle"
+            type="button"
+            aria-label="Toggle submenu"
+            aria-expanded="false"
+          >
+            <i data-lucide="chevron-down"></i></button
+        ></a>
+        <ul class="lu-drawer__sub">
+          <li><a href="services.html">All Services</a></li>
+          <li><a href="service-details.html">Service Details</a></li>
+        </ul>
+      </li>
+      <li>
+        <a href="portfolio.html"
+          >Work
+          <button
+            class="lu-drawer__toggle"
+            type="button"
+            aria-label="Toggle submenu"
+            aria-expanded="false"
+          >
+            <i data-lucide="chevron-down"></i></button
+        ></a>
+        <ul class="lu-drawer__sub">
+          <li><a href="portfolio.html">Portfolio Grid</a></li>
+          <li><a href="portfolio-details.html">Project Details</a></li>
+        </ul>
+      </li>
+      <li>
+        <a href="team.html"
+          >Pages
+          <button
+            class="lu-drawer__toggle"
+            type="button"
+            aria-label="Toggle submenu"
+            aria-expanded="false"
+          >
+            <i data-lucide="chevron-down"></i></button
+        ></a>
+        <ul class="lu-drawer__sub">
+          <li><a href="team.html">Team</a></li>
+          <li><a href="team-details.html">Team Details</a></li>
+          <li><a href="pricing.html">Pricing</a></li>
+          <li><a href="faq.html">FAQ</a></li>
+          <li><a href="404.html">404 Error</a></li>
+          <li><a href="coming-soon.html">Coming Soon</a></li>
+        </ul>
+      </li>
+      <li>
+        <a href="blog.html"
+          >Blog
+          <button
+            class="lu-drawer__toggle"
+            type="button"
+            aria-label="Toggle submenu"
+            aria-expanded="false"
+          >
+            <i data-lucide="chevron-down"></i></button
+        ></a>
+        <ul class="lu-drawer__sub">
+          <li><a href="blog.html">Blog Grid</a></li>
+          <li><a href="blog-details.html">Article</a></li>
+        </ul>
+      </li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+  </nav>
+
+  <a class="lu-btn lu-btn--accent" href="contact.html">
+    Start a project <i data-lucide="arrow-up-right" class="lu-btn__icon"></i>
+  </a>
+</div>
+
+<main id="main">
+<!-- ============================ BANNER ============================ -->
+<section class="lu-banner">
+  <div class="lu-banner__glow" aria-hidden="true"></div>
+  <div class="container">
+    <h1 class="lu-lines">Services</h1>
+    <nav aria-label="Breadcrumb">
+      <ol class="lu-crumb">
+        <li><a href="index.html">Home</a></li>
+        <li aria-current="page">Services</li>
+      </ol>
+    </nav>
+  </div>
+</section>
+
+<!-- ============================ INTRO ============================ -->
+<section class="lu-section">
+  <div class="container">
+    <div class="lu-sec-head lu-sec-head--split">
+      <div>
+        <p class="lu-label">What we offer</p>
+        <h2 class="lu-lines">Four services.<br />One team delivering them.</h2>
+      </div>
+      <p class="lu-lead mb-0" data-reveal="fade">
+        Most engagements combine two or three of these. We'll tell you which
+        ones you actually need — including when the answer is "fewer".
+      </p>
+    </div>
+
+    <div class="lu-rows">
+      <a class="lu-row" href="service-details.html" data-reveal="fade">
+        <span class="lu-row__num">01 / 04</span>
+        <h3 class="lu-row__title">Brand Identity</h3>
+        <p class="lu-row__body">
+          Positioning, naming, logo systems, typography, colour and the written
+          guidelines that keep it coherent once twenty people start using it.
+        </p>
+      </a>
+      <a class="lu-row" href="service-details.html" data-reveal="fade">
+        <span class="lu-row__num">02 / 04</span>
+        <h3 class="lu-row__title">Product Design</h3>
+        <p class="lu-row__body">
+          User research, information architecture, interface design and
+          component libraries built against real engineering constraints.
+        </p>
+      </a>
+      <a class="lu-row" href="service-details.html" data-reveal="fade">
+        <span class="lu-row__num">03 / 04</span>
+        <h3 class="lu-row__title">Web Engineering</h3>
+        <p class="lu-row__body">
+          Marketing sites and application front-ends. Semantic markup, real
+          accessibility, and performance budgets we hold ourselves to.
+        </p>
+      </a>
+      <a class="lu-row" href="service-details.html" data-reveal="fade">
+        <span class="lu-row__num">04 / 04</span>
+        <h3 class="lu-row__title">Motion &amp; 3D</h3>
+        <p class="lu-row__body">
+          Interface motion, brand animation and lightweight 3D — used where it
+          clarifies something, not where it merely impresses.
+        </p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ DELIVERABLES ============================ -->
+<section class="lu-section lu-section--sunken">
+  <div class="container">
+    <div class="lu-sec-head lu-sec-head--split">
+      <div>
+        <p class="lu-label">Deliverables</p>
+        <h2 class="lu-lines">What lands in<br />your drive at the end.</h2>
+      </div>
+      <p class="lu-lead mb-0" data-reveal="fade">
+        No vague "strategy documents". Everything below is a real file your team
+        can open and use.
+      </p>
+    </div>
+
+    <div class="row g-3 g-lg-4">
+      <div class="col-md-6 col-lg-4" data-reveal>
+        <article class="lu-card">
+          <div class="lu-card__icon"><i data-lucide="palette"></i></div>
+          <h3>Brand guidelines</h3>
+          <p>
+            A working document covering logo usage, type scale, colour tokens,
+            photography direction and tone of voice.
+          </p>
+        </article>
+      </div>
+      <div class="col-md-6 col-lg-4" data-reveal style="--d: 80ms">
+        <article class="lu-card">
+          <div class="lu-card__icon"><i data-lucide="figma"></i></div>
+          <h3>Source design files</h3>
+          <p>
+            Organised, named and componentised — not a canvas of loose frames
+            you have to reverse-engineer.
+          </p>
+        </article>
+      </div>
+      <div class="col-md-6 col-lg-4" data-reveal style="--d: 160ms">
+        <article class="lu-card">
+          <div class="lu-card__icon"><i data-lucide="component"></i></div>
+          <h3>Component library</h3>
+          <p>
+            Coded components with usage notes, states and accessibility
+            behaviour documented per element.
+          </p>
+        </article>
+      </div>
+      <div class="col-md-6 col-lg-4" data-reveal>
+        <article class="lu-card">
+          <div class="lu-card__icon"><i data-lucide="gauge"></i></div>
+          <h3>Performance report</h3>
+          <p>
+            Lighthouse and Core Web Vitals measured on real hardware, with the
+            budget we committed to at the start.
+          </p>
+        </article>
+      </div>
+      <div class="col-md-6 col-lg-4" data-reveal style="--d: 80ms">
+        <article class="lu-card">
+          <div class="lu-card__icon"><i data-lucide="video"></i></div>
+          <h3>Handover walkthrough</h3>
+          <p>
+            A recorded session covering structure, decisions and the parts that
+            will bite you if you change them carelessly.
+          </p>
+        </article>
+      </div>
+      <div class="col-md-6 col-lg-4" data-reveal style="--d: 160ms">
+        <article class="lu-card">
+          <div class="lu-card__icon"><i data-lucide="life-buoy"></i></div>
+          <h3>Thirty days of support</h3>
+          <p>
+            Bug fixes and questions answered after launch, included. Not an
+            upsell, not a retainer you have to negotiate.
+          </p>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ PROCESS ============================ -->
+<section class="lu-section">
+  <div class="container">
+    <div class="row g-5">
+      <div class="col-lg-5">
+        <p class="lu-label">Engagement</p>
+        <h2 class="lu-lines" style="font-size: var(--lu-fs-h2)">
+          How a project<br />usually runs.
+        </h2>
+        <p class="lu-muted mt-4" data-reveal="fade">
+          A typical engagement is ten to sixteen weeks. Shorter sprints are
+          possible when the scope is genuinely narrow — we'll say so if it isn't.
+        </p>
+        <a class="lu-btn lu-btn--ghost lu-btn--auto mt-3" href="pricing.html">
+          See pricing <i data-lucide="arrow-right" class="lu-btn__icon"></i>
+        </a>
+      </div>
+      <div class="col-lg-7">
+        <div class="lu-acc" data-single="true">
+          <div class="lu-acc__item">
+            <h3 class="m-0">
+              <button
+                class="lu-acc__btn"
+                type="button"
+                aria-expanded="true"
+                aria-controls="svc-1"
+              >
+                Week 1–2 · Discovery
+                <span class="lu-acc__sign" aria-hidden="true"></span>
+              </button>
+            </h3>
+            <div class="lu-acc__panel is-open" id="svc-1">
+              <div>
+                <p>
+                  Stakeholder interviews, an audit of what exists, and a read of
+                  your analytics. We end this phase with a written problem
+                  statement you have to agree with before we continue.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="lu-acc__item">
+            <h3 class="m-0">
+              <button
+                class="lu-acc__btn"
+                type="button"
+                aria-expanded="false"
+                aria-controls="svc-2"
+              >
+                Week 3–5 · Direction
+                <span class="lu-acc__sign" aria-hidden="true"></span>
+              </button>
+            </h3>
+            <div class="lu-acc__panel" id="svc-2">
+              <div>
+                <p>
+                  Two or three distinct creative routes with the trade-offs
+                  spelled out. You pick one. We do not average them together
+                  into something nobody chose.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="lu-acc__item">
+            <h3 class="m-0">
+              <button
+                class="lu-acc__btn"
+                type="button"
+                aria-expanded="false"
+                aria-controls="svc-3"
+              >
+                Week 6–12 · Build
+                <span class="lu-acc__sign" aria-hidden="true"></span>
+              </button>
+            </h3>
+            <div class="lu-acc__panel" id="svc-3">
+              <div>
+                <p>
+                  Design and engineering run in parallel on a shared staging
+                  URL. You get a demo every Thursday and can click through the
+                  real thing whenever you want.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="lu-acc__item">
+            <h3 class="m-0">
+              <button
+                class="lu-acc__btn"
+                type="button"
+                aria-expanded="false"
+                aria-controls="svc-4"
+              >
+                Week 13–16 · Launch &amp; handover
+                <span class="lu-acc__sign" aria-hidden="true"></span>
+              </button>
+            </h3>
+            <div class="lu-acc__panel" id="svc-4">
+              <div>
+                <p>
+                  Content migration, QA across browsers and assistive tech,
+                  performance verification, then documentation and a recorded
+                  walkthrough for your team.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<section class="lu-cta">
+  <div class="lu-cta__glow" aria-hidden="true"></div>
+  <div class="container">
+    <p class="lu-label lu-label--center justify-content-center">
+      Let's build something
+    </p>
+    <h2 class="lu-lines" style="font-size: var(--lu-fs-h1)">
+      Have a project in mind?<br />We'd love to hear it.
+    </h2>
+    <p class="lu-lead mx-auto mb-4" style="max-width: 52ch" data-reveal="fade">
+      Tell us where you are and where you want to be. We'll come back within two
+      working days with a plan, a timeline and an honest budget.
+    </p>
+    <div
+      class="d-flex flex-wrap gap-3 justify-content-center"
+      data-reveal="fade"
+      style="--d: 120ms"
+    >
+      <a class="lu-btn lu-btn--accent lu-btn--lg lu-btn--auto" href="contact.html">
+        Start a project
+        <i data-lucide="arrow-up-right" class="lu-btn__icon"></i>
+      </a>
+      <a class="lu-btn lu-btn--ghost lu-btn--lg lu-btn--auto" href="portfolio.html">
+        See our work
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer class="lu-footer">
+  <div class="container">
+    <div class="lu-footer__top">
+      <div>
+        <a class="lu-brand mb-3 d-inline-flex" href="index.html">
+          Lumina<span class="lu-brand__dot" aria-hidden="true"></span>
+        </a>
+        <p class="lu-muted" style="max-width: 34ch">
+          An independent design and engineering studio building brands, products
+          and the systems that hold them together.
+        </p>
+        <ul class="lu-social mt-4">
+          <li>
+            <a href="#" aria-label="Lumina on Dribbble"
+              ><i data-lucide="dribbble"></i
+            ></a>
+          </li>
+          <li>
+            <a href="#" aria-label="Lumina on GitHub"
+              ><i data-lucide="github"></i
+            ></a>
+          </li>
+          <li>
+            <a href="#" aria-label="Lumina on LinkedIn"
+              ><i data-lucide="linkedin"></i
+            ></a>
+          </li>
+          <li>
+            <a href="#" aria-label="Lumina on YouTube"
+              ><i data-lucide="youtube"></i
+            ></a>
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Studio</h4>
+        <ul class="lu-footer__links">
+          <li><a href="about.html">About us</a></li>
+          <li><a href="team.html">The team</a></li>
+          <li><a href="services.html">Services</a></li>
+          <li><a href="pricing.html">Pricing</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Explore</h4>
+        <ul class="lu-footer__links">
+          <li><a href="portfolio.html">Portfolio</a></li>
+          <li><a href="blog.html">Journal</a></li>
+          <li><a href="faq.html">FAQ</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Get in touch</h4>
+        <ul class="lu-footer__links">
+          <li><a href="mailto:studio@example.com">studio@example.com</a></li>
+          <li><a href="tel:+10000000000">+1 (000) 000-0000</a></li>
+          <li class="lu-muted" style="font-size: 0.92rem">
+            24 Fieldgate Street<br />London, E1 1ES
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="lu-footer__bottom">
+      <p class="mb-0">
+        &copy; <span data-year>2026</span> Lumina Studio. All rights reserved.
+      </p>
+      <p class="mb-0">
+        Built with Bootstrap 5 &middot;
+        <a class="lu-ulink" href="#main">Back to top</a>
+      </p>
+    </div>
+  </div>
+</footer>
+
+<button class="lu-to-top" type="button" aria-label="Back to top">
+  <i data-lucide="arrow-up"></i>
+</button>
+
+<!-- Vendor: Bootstrap bundle (MIT) -->
+<script src="assets/vendor/bootstrap.bundle.min.js"></script>
+
+<!-- Vendor: Lenis smooth scroll (MIT) -->
+<script src="assets/vendor/lenis.min.js"></script>
+
+<!-- Vendor: Swiper slider (MIT) -->
+<script src="assets/vendor/swiper-bundle.min.js"></script>
+
+<!-- Vendor: Lucide icons (ISC) -->
+<script src="assets/vendor/lucide.min.js"></script>
+
+<!-- Template JS -->
+<script src="assets/js/main.js"></script>
+</body>
+</html>

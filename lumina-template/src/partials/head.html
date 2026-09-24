@@ -1,0 +1,60 @@
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#0a0a0c" />
+
+<title>{{TITLE}} — Lumina</title>
+<meta name="description" content="{{DESC}}" />
+<link rel="canonical" href="https://example.com/{{SLUG}}" />
+
+<!-- Open Graph -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Lumina" />
+<meta property="og:title" content="{{TITLE}} — Lumina" />
+<meta property="og:description" content="{{DESC}}" />
+<meta property="og:url" content="https://example.com/{{SLUG}}" />
+<meta property="og:image" content="https://example.com/assets/img/og.jpg" />
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="{{TITLE}} — Lumina" />
+<meta name="twitter:description" content="{{DESC}}" />
+<meta name="twitter:image" content="https://example.com/assets/img/og.jpg" />
+
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml" />
+
+<!-- Fonts: self-hosted (SIL Open Font License) -->
+<link rel="preload" href="assets/fonts/syne-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="assets/fonts/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="stylesheet" href="assets/css/fonts.css" />
+
+<!-- Vendor CSS -->
+<link rel="stylesheet" href="assets/vendor/bootstrap.min.css" />
+<link rel="stylesheet" href="assets/vendor/swiper-bundle.min.css" />
+
+<!-- Template CSS -->
+<link rel="stylesheet" href="assets/css/style.css" />
+
+<!-- Set the stored theme before first paint so there is no flash -->
+<script>
+  (function () {
+    try {
+      var t = localStorage.getItem("lumina-theme");
+      if (t) document.documentElement.setAttribute("data-theme", t);
+    } catch (e) {}
+  })();
+</script>
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Lumina",
+    "url": "https://example.com",
+    "description": "{{DESC}}",
+    "sameAs": [
+      "https://example.com",
+      "https://example.com",
+      "https://example.com"
+    ]
+  }
+</script>

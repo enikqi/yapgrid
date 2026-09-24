@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#0a0a0c" />
+
+<title>Coming Soon — Lumina</title>
+<meta name="description" content="Something new is on the way. Leave your email and we'll tell you the moment it lands." />
+<link rel="canonical" href="https://example.com/coming-soon.html" />
+
+<!-- Open Graph -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Lumina" />
+<meta property="og:title" content="Coming Soon — Lumina" />
+<meta property="og:description" content="Something new is on the way. Leave your email and we'll tell you the moment it lands." />
+<meta property="og:url" content="https://example.com/coming-soon.html" />
+<meta property="og:image" content="https://example.com/assets/img/og.jpg" />
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Coming Soon — Lumina" />
+<meta name="twitter:description" content="Something new is on the way. Leave your email and we'll tell you the moment it lands." />
+<meta name="twitter:image" content="https://example.com/assets/img/og.jpg" />
+
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml" />
+
+<!-- Fonts: self-hosted (SIL Open Font License) -->
+<link rel="preload" href="assets/fonts/syne-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="assets/fonts/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="stylesheet" href="assets/css/fonts.css" />
+
+<!-- Vendor CSS -->
+<link rel="stylesheet" href="assets/vendor/bootstrap.min.css" />
+<link rel="stylesheet" href="assets/vendor/swiper-bundle.min.css" />
+
+<!-- Template CSS -->
+<link rel="stylesheet" href="assets/css/style.css" />
+
+<!-- Set the stored theme before first paint so there is no flash -->
+<script>
+  (function () {
+    try {
+      var t = localStorage.getItem("lumina-theme");
+      if (t) document.documentElement.setAttribute("data-theme", t);
+    } catch (e) {}
+  })();
+</script>
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Lumina",
+    "url": "https://example.com",
+    "description": "Something new is on the way. Leave your email and we'll tell you the moment it lands.",
+    "sameAs": [
+      "https://example.com",
+      "https://example.com",
+      "https://example.com"
+    ]
+  }
+</script>
+</head>
+<body data-page="coming-soon.html">
+
+<main id="main">
+<section class="lu-util">
+  <div class="lu-hero__glow" aria-hidden="true"></div>
+  <div class="container" style="position: relative; z-index: 2">
+    <a class="lu-brand justify-content-center mb-4" href="index.html">
+      Lumina<span class="lu-brand__dot" aria-hidden="true"></span>
+    </a>
+
+    <p class="lu-label lu-label--center justify-content-center">
+      Launching soon
+    </p>
+
+    <h1 style="font-size: var(--lu-fs-h1); max-width: 16ch; margin-inline: auto">
+      Something new is on the way
+    </h1>
+
+    <p class="lu-lead mx-auto" style="max-width: 48ch">
+      We're rebuilding the studio site from the ground up. Leave your email and
+      we'll tell you the moment it's live — nothing else, ever.
+    </p>
+
+    <!-- Countdown: set data-countdown to any future ISO date -->
+    <div class="lu-countdown" data-countdown="2026-12-31T23:59:59Z">
+      <div class="lu-countdown__cell">
+        <span class="lu-countdown__val" data-cd-days>00</span>
+        <span class="lu-countdown__lbl">Days</span>
+      </div>
+      <div class="lu-countdown__cell">
+        <span class="lu-countdown__val" data-cd-hours>00</span>
+        <span class="lu-countdown__lbl">Hours</span>
+      </div>
+      <div class="lu-countdown__cell">
+        <span class="lu-countdown__val" data-cd-minutes>00</span>
+        <span class="lu-countdown__lbl">Minutes</span>
+      </div>
+      <div class="lu-countdown__cell">
+        <span class="lu-countdown__val" data-cd-seconds>00</span>
+        <span class="lu-countdown__lbl">Seconds</span>
+      </div>
+    </div>
+
+    <form class="lu-subscribe" data-validate novalidate>
+      <div class="lu-field mb-0" style="flex: 1; min-width: 220px">
+        <label class="lu-sr-only" for="cs-email">Email address</label>
+        <input
+          class="lu-input"
+          id="cs-email"
+          name="email"
+          type="email"
+          placeholder="you@company.com"
+          required
+          autocomplete="email"
+        />
+        <span class="lu-error" role="alert"></span>
+      </div>
+      <button class="lu-btn lu-btn--accent lu-btn--auto" type="submit">
+        Notify me
+        <i data-lucide="arrow-right" class="lu-btn__icon"></i>
+      </button>
+      <p class="lu-form-note w-100" role="status" aria-live="polite"></p>
+    </form>
+
+    <ul class="lu-social justify-content-center mt-5">
+      <li><a href="#" aria-label="Lumina on Dribbble"><i data-lucide="dribbble"></i></a></li>
+      <li><a href="#" aria-label="Lumina on GitHub"><i data-lucide="github"></i></a></li>
+      <li><a href="#" aria-label="Lumina on LinkedIn"><i data-lucide="linkedin"></i></a></li>
+    </ul>
+
+    <p class="lu-muted mt-4" style="font-size: 0.85rem">
+      &copy; <span data-year>2026</span> Lumina Studio ·
+      <a class="lu-ulink" href="index.html">Return to the current site</a>
+    </p>
+  </div>
+</section>
+</main>
+
+<!-- Vendor: Bootstrap bundle (MIT) -->
+<script src="assets/vendor/bootstrap.bundle.min.js"></script>
+
+<!-- Vendor: Lenis smooth scroll (MIT) -->
+<script src="assets/vendor/lenis.min.js"></script>
+
+<!-- Vendor: Swiper slider (MIT) -->
+<script src="assets/vendor/swiper-bundle.min.js"></script>
+
+<!-- Vendor: Lucide icons (ISC) -->
+<script src="assets/vendor/lucide.min.js"></script>
+
+<!-- Template JS -->
+<script src="assets/js/main.js"></script>
+</body>
+</html>

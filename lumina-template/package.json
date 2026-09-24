@@ -1,0 +1,21 @@
+{
+  "name": "lumina-template",
+  "version": "1.0.0",
+  "description": "A premium, fully responsive HTML template for creative studios, agencies and personal portfolios. 16 pages, one consistent design system, no framework beyond Bootstrap 5.",
+  "main": "build.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@fontsource/inter": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "@fontsource/syne": "^5.3.0",
+    "bootstrap": "^5.3.3",
+    "lenis": "^1.1.18",
+    "lucide": "^0.454.0",
+    "swiper": "^11.2.10"
+  }
+}

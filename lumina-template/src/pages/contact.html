@@ -1,0 +1,174 @@
+<!-- ============================ BANNER ============================ -->
+<section class="lu-banner">
+  <div class="lu-banner__glow" aria-hidden="true"></div>
+  <div class="container">
+    <h1 class="lu-lines">Let's talk</h1>
+    <nav aria-label="Breadcrumb">
+      <ol class="lu-crumb">
+        <li><a href="index.html">Home</a></li>
+        <li aria-current="page">Contact</li>
+      </ol>
+    </nav>
+  </div>
+</section>
+
+<!-- ============================ FORM + DETAILS ============================ -->
+<section class="lu-section">
+  <div class="container">
+    <div class="row g-5">
+      <!-- Form -->
+      <div class="col-lg-7">
+        <p class="lu-label">Project enquiry</p>
+        <h2 class="lu-lines" style="font-size: var(--lu-fs-h3)">
+          Tell us what you're<br />trying to build.
+        </h2>
+        <p class="lu-muted mb-4" data-reveal="fade">
+          The more specific you are, the more useful our first reply will be.
+          Budget range helps more than you'd think.
+        </p>
+
+        <form data-validate novalidate data-reveal="fade">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="lu-field">
+                <label for="cf-name">Your name</label>
+                <input
+                  class="lu-input"
+                  id="cf-name"
+                  name="name"
+                  type="text"
+                  placeholder="Jordan Ellis"
+                  required
+                  autocomplete="name"
+                />
+                <span class="lu-error" role="alert"></span>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="lu-field">
+                <label for="cf-email">Email address</label>
+                <input
+                  class="lu-input"
+                  id="cf-email"
+                  name="email"
+                  type="email"
+                  placeholder="you@company.com"
+                  required
+                  autocomplete="email"
+                />
+                <span class="lu-error" role="alert"></span>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="lu-field">
+                <label for="cf-company">Company</label>
+                <input
+                  class="lu-input"
+                  id="cf-company"
+                  name="company"
+                  type="text"
+                  placeholder="Optional"
+                  autocomplete="organization"
+                />
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="lu-field">
+                <label for="cf-budget">Budget range</label>
+                <select class="lu-select" id="cf-budget" name="budget">
+                  <option value="">Select a range</option>
+                  <option>Under £10,000</option>
+                  <option>£10,000 – £25,000</option>
+                  <option>£25,000 – £60,000</option>
+                  <option>£60,000+</option>
+                  <option>Not sure yet</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="lu-field">
+                <label for="cf-services">What do you need?</label>
+                <select class="lu-select" id="cf-services" name="services">
+                  <option value="">Select a service</option>
+                  <option>Brand identity</option>
+                  <option>Product design</option>
+                  <option>Web engineering</option>
+                  <option>Motion &amp; 3D</option>
+                  <option>A combination</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="lu-field">
+                <label for="cf-message">About the project</label>
+                <textarea
+                  class="lu-textarea"
+                  id="cf-message"
+                  name="message"
+                  placeholder="What are you building, who is it for, and what's the deadline?"
+                  required
+                ></textarea>
+                <span class="lu-error" role="alert"></span>
+              </div>
+            </div>
+          </div>
+
+          <button class="lu-btn lu-btn--accent lu-btn--lg" type="submit">
+            Send enquiry
+            <i data-lucide="arrow-up-right" class="lu-btn__icon"></i>
+          </button>
+
+          <p class="lu-form-note" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+
+      <!-- Details -->
+      <aside class="col-lg-5">
+        <div style="position: sticky; top: 110px">
+          <p class="lu-label">Direct</p>
+          <h2 style="font-size: var(--lu-fs-h4)">Other ways to reach us</h2>
+
+          <div class="mt-4">
+            <div class="lu-contact-row" data-reveal="fade">
+              <div class="lu-contact-row__icon"><i data-lucide="mail"></i></div>
+              <div>
+                <h4>Email</h4>
+                <a href="mailto:studio@example.com">studio@example.com</a>
+              </div>
+            </div>
+            <div class="lu-contact-row" data-reveal="fade">
+              <div class="lu-contact-row__icon"><i data-lucide="phone"></i></div>
+              <div>
+                <h4>Phone</h4>
+                <a href="tel:+10000000000">+1 (000) 000-0000</a>
+              </div>
+            </div>
+            <div class="lu-contact-row" data-reveal="fade">
+              <div class="lu-contact-row__icon"><i data-lucide="map-pin"></i></div>
+              <div>
+                <h4>Studio</h4>
+                <p>24 Fieldgate Street<br />London, E1 1ES</p>
+              </div>
+            </div>
+            <div class="lu-contact-row" data-reveal="fade">
+              <div class="lu-contact-row__icon"><i data-lucide="clock"></i></div>
+              <div>
+                <h4>Response time</h4>
+                <p>Within two working days</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="lu-card mt-4" data-reveal="fade">
+            <h3 style="font-size: 1.05rem">Current availability</h3>
+            <p class="lu-muted mb-0" style="font-size: 0.92rem">
+              We're booking new projects from
+              <span class="lu-accent">Q3 2026</span>. Sprints can sometimes
+              start sooner — mention it if your timeline is tight.
+            </p>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
