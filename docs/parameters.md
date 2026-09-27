@@ -5,7 +5,7 @@ YapGrid embed URLs support optional query parameters. Add parameters after the e
 Example:
 
 ```text
-https://yapgrid.com/embed/movie/550?autoplay=1&server=x&lang=en
+https://yapgrid.com/embed/movie/550?autoplay=1&lang=en
 ```
 
 ## Optional Query Parameters
@@ -13,14 +13,24 @@ https://yapgrid.com/embed/movie/550?autoplay=1&server=x&lang=en
 | Parameter | Type | Values / Example | Description |
 | --- | --- | --- | --- |
 | `autoplay` | boolean | `1`, `0`, `true`, `false` | Requests automatic playback. Browsers may still block autoplay with sound, so users may need to start playback manually. |
-| `server` | string | `x`, `y`, `z` | Sets the initial server. The user can still switch servers from the player controls. |
-| `lang` | string | `en`, `sq`, `de`, `fr` | Preferred/default subtitle language. |
+| `lang` | string | `en`, `sq`, `de`, `fr` | Preferred/default subtitle language. Also sets the language of the player interface. |
 | `title` | string | `Fight%20Club` | Overrides the title displayed by the player. Text values should be URL-encoded. |
-| `theme` | string | `red`, `blue`, `dark` | Sets the player accent theme when supported. |
 | `sub_url` | string | URL-encoded `.srt` or `.vtt` URL | Adds an external subtitle file. The subtitle host must allow browser CORS access. |
 | `sub_lang` | string | `en`, `sq`, `de`, `fr` | Language code for the subtitle supplied through `sub_url`. |
 | `sub_label` | string | `English` | Custom name displayed for the external subtitle track. |
-| `ds_lang` | string | `en`, `sq`, `de`, `fr` | Compatibility alias for `sub_lang`. |
+
+Any parameter not listed here is ignored. Unknown parameters do not cause an error, so an embed URL that carries extra values from another player still loads normally.
+
+## Accepted Aliases
+
+Some parameters accept a second spelling. Both forms behave identically, so you can keep an existing embed URL as it is.
+
+| Alias | Same as |
+| --- | --- |
+| `autoPlay` | `autoplay` |
+| `sub` | `lang` |
+| `subUrl` | `sub_url` |
+| `ds_lang` | `sub_lang` |
 
 ## External Subtitle Example
 
@@ -31,7 +41,7 @@ https://yapgrid.com/embed/movie/550?sub_url=https%3A%2F%2Fexample.com%2Fsubtitle
 ## Combined Example
 
 ```text
-https://yapgrid.com/embed/movie/550?autoplay=1&server=x&lang=en&sub_url=https%3A%2F%2Fexample.com%2Fsubtitles%2Fenglish.vtt&sub_lang=en&sub_label=English
+https://yapgrid.com/embed/movie/550?autoplay=1&lang=en&sub_url=https%3A%2F%2Fexample.com%2Fsubtitles%2Fenglish.vtt&sub_lang=en&sub_label=English
 ```
 
 ## URL Encoding

@@ -27,6 +27,24 @@ This is useful for:
 
 Subtitle translation availability and quality can vary. Translation may depend on the selected subtitle track, language pair, browser behavior, and title availability. YapGrid does not guarantee that every subtitle track can be translated.
 
+## Subtitle Timing Adjustment
+
+Subtitles are timed against a particular release of a title. A viewer watching a different cut can find the subtitles running a few seconds ahead of the audio or a few seconds behind it. Nothing in a subtitle file records this difference, so it cannot be corrected automatically.
+
+YapGrid puts the correction in the player, next to the subtitle list:
+
+- Shift subtitles earlier or later in steps of `0.5` seconds.
+- The pending shift is displayed while adjusting, so the viewer confirms it before it applies.
+- The range is `120` seconds in either direction.
+
+### Corrections Are Shared
+
+A correction is kept and reused. When one viewer fixes the timing for a subtitle track, the next viewer of that title receives the corrected version already applied.
+
+This matters for website owners because it means subtitle quality improves on its own as a title gets watched. A popular title tends to be corrected early by one viewer, and every visitor after that gets subtitles that line up without touching any control.
+
+Corrections apply per title, per language, and per subtitle track. Choosing a different track starts from that track's own timing.
+
 ## Local Subtitle Uploads
 
 Users can upload local subtitle files directly inside the player.

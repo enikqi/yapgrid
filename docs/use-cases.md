@@ -48,9 +48,9 @@ Use a responsive 16:9 iframe style for desktop, tablet, and mobile layouts.
 style="width:100%; aspect-ratio:16/9; border:0"
 ```
 
-## One Embed URL with Server Selection
+## One Embed URL per Title
 
-YapGrid includes a Server X/Y/Z selector inside the player. A website can use one embed URL, while viewers can switch servers from the player controls when needed.
+A website stores one embed URL per movie or episode. YapGrid resolves the playback source behind that URL, so the URL on your page does not need to change when the source does.
 
 ## External Subtitle Example
 

@@ -20,24 +20,26 @@ YapGrid provides a clean public player experience that can be embedded worldwide
 
 - Movies using TMDB movie IDs.
 - TV episodes using TMDB TV IDs, season numbers, and episode numbers.
-- A fast multi-server streaming network with an in-player Server X/Y/Z selector.
+- A fast streaming network resolved automatically behind one embed URL per title.
 - Automatic synchronized subtitles when available for the selected title.
 - Local `.srt` and `.vtt` subtitle uploads inside the player.
 - External subtitle URLs through embed parameters.
 - In-player subtitle translation for users who want subtitles in another language when supported.
+- In-player subtitle timing adjustment, with corrections kept and reused for later viewers.
+- A player interface translated into more than 50 languages.
 - Quality selection, playback speed, fullscreen, volume, seek controls, and loading indicators.
 - Responsive behavior for desktop, tablet, and mobile screens.
 
 ## Built for Movie and TV Website Owners
 
-YapGrid is useful when you want to create a movie or TV website that focuses on discovery, catalog pages, watch pages, editorial content, or community recommendations. Instead of designing a player interface, server selector, subtitle selector, subtitle upload workflow, and responsive playback layout yourself, you can place a YapGrid iframe on your page and keep your website focused on the user experience around the player.
+YapGrid is useful when you want to create a movie or TV website that focuses on discovery, catalog pages, watch pages, editorial content, or community recommendations. Instead of designing a player interface, subtitle selector, subtitle upload workflow, subtitle timing controls, and responsive playback layout yourself, you can place a YapGrid iframe on your page and keep your website focused on the user experience around the player.
 
 A typical website flow can be simple:
 
 1. Create a page for a movie or TV episode.
 2. Store or display the correct TMDB ID.
 3. Add the YapGrid iframe for that movie or episode.
-4. Let the player handle playback controls, server switching, subtitles, subtitle uploads, and subtitle translation.
+4. Let the player handle playback controls, subtitles, subtitle uploads, subtitle translation, and subtitle timing.
 
 Website owners remain responsible for how they use public embeds and for following applicable laws, platform rules, and content policies in their own projects.
 
@@ -96,8 +98,9 @@ No API key is required.
 | [Getting Started](docs/getting-started.md) | Basic setup and embed requirements. |
 | [Movie Embed](docs/movie-embed.md) | How to embed movies using TMDB IDs. |
 | [TV Embed](docs/tv-embed.md) | How to embed TV episodes using TMDB IDs, season, and episode numbers. |
-| [Parameters](docs/parameters.md) | Optional query parameters for playback, subtitles, language, and appearance. |
-| [Subtitles](docs/subtitles.md) | Automatic subtitles, local uploads, external subtitle links, and translation. |
+| [Parameters](docs/parameters.md) | Optional query parameters for playback, subtitles, and language. |
+| [Languages](docs/languages.md) | How the language is chosen, and how to set it correctly per region. |
+| [Subtitles](docs/subtitles.md) | Automatic subtitles, local uploads, external subtitle links, translation, and timing. |
 | [Player Controls](docs/player-controls.md) | Available controls inside the YapGrid player. |
 | [Troubleshooting](docs/troubleshooting.md) | Common embed and playback issues. |
 | [FAQ](docs/faq.md) | Frequently asked questions. |
@@ -115,7 +118,7 @@ https://yapgrid.com/embed/movie/550?sub_url=https%3A%2F%2Fexample.com%2Fsubtitle
 Combined example:
 
 ```text
-https://yapgrid.com/embed/movie/550?autoplay=1&server=x&lang=en&sub_url=https%3A%2F%2Fexample.com%2Fsubtitles%2Fenglish.vtt&sub_lang=en&sub_label=English
+https://yapgrid.com/embed/movie/550?autoplay=1&lang=en&sub_url=https%3A%2F%2Fexample.com%2Fsubtitles%2Fenglish.vtt&sub_lang=en&sub_label=English
 ```
 
 ## Scope

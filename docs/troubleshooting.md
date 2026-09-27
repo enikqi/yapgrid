@@ -4,11 +4,15 @@ Use this guide when an embed does not behave as expected.
 
 ## Timeout
 
-Retry playback or select another server from the player controls.
+Retry playback. If the title still does not start, try again later.
 
 ## No Stream Found
 
-Test another server. Availability may differ between servers and titles.
+Availability can differ between titles and can change over time. Confirm the TMDB ID is correct for the movie or episode, then retry.
+
+## Subtitles Out of Sync
+
+Use the timing control next to the subtitle list to shift subtitles earlier or later in half-second steps. If a track is far out, switching to a different subtitle track is usually faster than a large shift.
 
 ## Autoplay Blocked
 

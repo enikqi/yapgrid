@@ -33,10 +33,10 @@ https://yapgrid.com/embed/tv/1396/1/1
 
 ## With Optional Parameters
 
-Example with autoplay, initial server, and preferred subtitle language:
+Example with autoplay and a preferred subtitle language:
 
 ```text
-https://yapgrid.com/embed/tv/1396/1/1?autoplay=1&server=y&lang=en
+https://yapgrid.com/embed/tv/1396/1/1?autoplay=1&lang=en
 ```
 
 Example with a custom displayed title:
@@ -47,6 +47,4 @@ https://yapgrid.com/embed/tv/1396/1/1?title=Breaking%20Bad%20S01E01
 
 ## Notes
 
-- The same URL can still use the player server selector.
 - Subtitle availability can vary by episode.
-- If one server does not load, users can select another server inside the player.

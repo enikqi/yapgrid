@@ -18,13 +18,13 @@ YapGrid supports subtitles, local subtitle uploads, external subtitle URLs, and 
 
 Subtitle translation is especially useful because users can adjust subtitle language options directly from the player controls instead of leaving the viewing experience to look for another subtitle file.
 
-## Can the same URL switch servers?
+## What if the subtitles are out of sync?
 
-Yes. Server selection is available inside the player.
+Viewers can shift subtitles earlier or later from the player, in steps of half a second. The correction is kept and reused, so the next viewer of that title gets subtitles that already line up.
 
-## Are separate URLs needed for Server X/Y/Z?
+## Do I need a different URL for each playback source?
 
-No. You can set an initial server with the `server` parameter, but users can switch servers inside the player.
+No. One embed URL per title is enough. YapGrid resolves the playback source, so your embed URL does not change when the source does.
 
 ## Can users upload subtitles?
 
@@ -72,9 +72,9 @@ No. This repository contains documentation only.
 
 No. This documentation repository does not publish the YapGrid application source code and does not mean the player source code is open source.
 
-## Does YapGrid guarantee that every title will play on every server?
+## Does YapGrid guarantee that every title will play?
 
-No. Availability may vary. If a title does not load on one server, users can retry or select another server from the player controls.
+No. Availability may vary by title, region, and moment. If a title does not load, retry playback.
 
 ## Does YapGrid guarantee subtitles for every title?
 

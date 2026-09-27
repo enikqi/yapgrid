@@ -31,10 +31,10 @@ https://yapgrid.com/embed/movie/550
 
 You can add optional query parameters to adjust the initial player behavior.
 
-Example with autoplay, initial server, and preferred subtitle language:
+Example with autoplay and a preferred subtitle language:
 
 ```text
-https://yapgrid.com/embed/movie/550?autoplay=1&server=x&lang=en
+https://yapgrid.com/embed/movie/550?autoplay=1&lang=en
 ```
 
 Example with a custom displayed title:
@@ -47,6 +47,5 @@ When adding text values such as a title, URL-encode spaces and special character
 
 ## Notes
 
-- The user can switch servers from inside the player.
 - Subtitle availability can vary by movie.
 - Autoplay may still be blocked by browser policy, especially when sound is enabled.

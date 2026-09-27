@@ -35,7 +35,7 @@ A simple YapGrid integration usually looks like this:
 3. Build the YapGrid embed URL.
 4. Place the URL inside an iframe.
 5. Use a responsive 16:9 layout so the player works across screen sizes.
-6. Add optional query parameters for autoplay, initial server, title, language, theme, or subtitles.
+6. Add optional query parameters for autoplay, title, language, or subtitles.
 
 ## Movie URL Format
 
@@ -78,7 +78,7 @@ Use a responsive 16:9 layout so the player scales cleanly across desktop, tablet
 
 The iframe approach makes YapGrid easy to place inside many types of websites. You can build your own website design, navigation, search pages, movie cards, TV episode pages, and recommendation sections around the player while keeping the actual player experience consistent.
 
-Inside the player, users can access playback controls, server selection, quality selection, subtitles, subtitle upload, subtitle translation, playback speed, volume, fullscreen, and loading indicators.
+Inside the player, users can access playback controls, quality selection, subtitles, subtitle upload, subtitle translation, subtitle timing adjustment, playback speed, volume, fullscreen, and loading indicators.
 
 ## Subtitle Translation
 
@@ -90,7 +90,7 @@ Availability may vary by title, language, and browser behavior.
 
 ## Optional Parameters
 
-YapGrid supports optional query parameters for autoplay, initial server, subtitle language, title, theme, and external subtitles.
+YapGrid supports optional query parameters for autoplay, subtitle language, title, and external subtitles.
 
 See [Parameters](parameters.md) for the full list.
 
@@ -100,5 +100,6 @@ See [Parameters](parameters.md) for the full list.
 - Use [TV Embed](tv-embed.md) for episode examples.
 - Use [Parameters](parameters.md) to customize embed behavior.
 - Use [Subtitles](subtitles.md) to add or manage subtitle tracks.
+- Use [Languages](languages.md) to set the right language for each region of your site.
 - Use [Player Controls](player-controls.md) to understand what users can do inside the player.
 - Use [Troubleshooting](troubleshooting.md) if an embed does not behave as expected.
