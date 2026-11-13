@@ -1,8 +1,8 @@
 # Subtitles
 
-YapGrid supports automatic subtitle tracks, local subtitle uploads, external subtitle URLs, and subtitle translation inside the player when available.
+YapGrid supports automatic subtitle tracks, external subtitle URLs, and in-player subtitle translation when available.
 
-Subtitles are an important part of the YapGrid experience because movie and TV websites often serve international audiences. A viewer may prefer a different language than the original audio, may need captions for accessibility, or may want to upload a custom subtitle file for the current session.
+Viewers can choose a subtitle language to follow the dialogue or use captions for accessibility.
 
 ## Automatic Subtitles
 
@@ -29,57 +29,25 @@ Subtitle translation availability and quality can vary. Translation may depend o
 
 ## Subtitle Timing Adjustment
 
-Subtitles are timed against a particular release of a title. A viewer watching a different cut can find the subtitles running a few seconds ahead of the audio or a few seconds behind it. Nothing in a subtitle file records this difference, so it cannot be corrected automatically.
+A subtitle can run early or late if it was timed for a different release. For tracks marked **Unverified timing**, use the controls next to the time bar to shift the subtitles earlier or later.
 
-YapGrid puts the correction in the player, next to the subtitle list:
-
-- Shift subtitles earlier or later in steps of `0.5` seconds.
-- The pending shift is displayed while adjusting, so the viewer confirms it before it applies.
-- The range is `120` seconds in either direction.
-
-### Corrections Are Shared
-
-A correction is kept and reused. When one viewer fixes the timing for a subtitle track, the next viewer of that title receives the corrected version already applied.
-
-This matters for website owners because it means subtitle quality improves on its own as a title gets watched. A popular title tends to be corrected early by one viewer, and every visitor after that gets subtitles that line up without touching any control.
-
-Corrections apply per title, per language, and per subtitle track. Choosing a different track starts from that track's own timing.
-
-## Local Subtitle Uploads
-
-Users can upload local subtitle files directly inside the player.
-
-Supported formats:
-
-- `.srt`
-- `.vtt`
-
-Maximum local subtitle file size:
-
-```text
-5 MB
-```
-
-Local subtitle uploads remain inside the user’s browser session. They are intended for the current viewing session and are not added as public subtitle tracks.
-
-A local upload is helpful when a user already has a subtitle file and wants to use it immediately without changing the embed URL.
+- Each click shifts the track by half a second and takes effect immediately.
+- The adjustment range is five minutes in either direction.
+- The player remembers manual adjustments in the current browser. It can also reuse an automatic timing match for the same subtitle and video version.
 
 ## External Subtitle URLs
 
 You can attach an external subtitle file using `sub_url`.
 
-External subtitle files must:
-
-- Use HTTP or HTTPS.
-- Be in `.srt` or `.vtt` format.
-- Allow browser CORS access.
-- Be available to the viewer’s browser.
+Use a direct, publicly reachable HTTPS URL to an `.srt` or `.vtt` file.
 
 Example:
 
 ```text
 https://yapgrid.com/embed/movie/550?sub_url=https%3A%2F%2Fexample.com%2Fsubtitles%2Fenglish.srt&sub_lang=en&sub_label=English
 ```
+
+Replace the example URL with the address of your subtitle file.
 
 External subtitle URLs are useful when a website owner wants a specific subtitle track to appear with the embed by default.
 
@@ -130,9 +98,6 @@ https://yapgrid.com/embed/movie/550?sub_url=https%3A%2F%2Fexample.com%2Fsubtitle
 ## Best Practices
 
 - Use `.vtt` or `.srt` files only.
-- Keep local subtitle files under 5 MB.
-- Use HTTPS for external subtitle files when possible.
-- Make sure external subtitle files allow browser CORS access.
 - Use clear labels such as `English`, `Albanian`, `German`, or `French`.
 - Test the embed after adding an external subtitle URL.
 - Remember that automatic subtitles and translation can vary by movie, episode, and language.

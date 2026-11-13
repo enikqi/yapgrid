@@ -1,29 +1,16 @@
 # Languages
 
-One parameter, `lang`, controls both the subtitle language and the language of the player interface. This page explains how YapGrid picks a language, why you should set it yourself, and how to set it correctly when your website serves several regions.
+Use `lang` to set the preferred subtitle language for an embed. The main player controls are in English.
 
-## How YapGrid Picks a Language
+## How YapGrid Picks a Subtitle Language
 
-When the player opens, it works down this list and stops at the first answer it gets:
+YapGrid uses the website's `lang` value when it is supported. A viewer's saved choice can take priority. Without an explicit or saved preference, YapGrid tries the viewer's country, then their browser language, then English.
 
-1. **The `lang` parameter in your embed URL.** If you set it, nothing else is consulted.
-2. **The viewer's country.** Used only when `lang` is absent.
-3. **The viewer's browser language**, from the `Accept-Language` header the browser sends.
-4. **English**, when none of the above produced a supported language.
-
-Steps 2 and 3 are guesses. They are there so an embed without any parameters still shows something sensible, not because they are expected to be correct. Step 1 is the only one that reflects what your website actually knows about the visitor.
-
-## Always Set `lang`
-
-Your website knows which region or language section a visitor is reading. YapGrid does not. A viewer travelling abroad, using a VPN, or running an English-language operating system in a non-English country will be guessed wrong by steps 2 and 3, and there is nothing the player can do about it.
-
-Set `lang` explicitly:
+Set `lang=de` to prefer German subtitles.
 
 ```text
 https://yapgrid.com/embed/movie/550?lang=de
 ```
-
-This sets the subtitle language to German and shows the player interface in German at the same time.
 
 ## Setting the Language per Zone
 
@@ -43,17 +30,18 @@ A small helper is usually enough. In a template, the value you already use to re
 ```html
 <iframe
   src="https://yapgrid.com/embed/movie/550?lang={{ page_language }}"
+  title="YapGrid movie player"
   style="width:100%; aspect-ratio:16/9; border:0"
   allow="autoplay; fullscreen; picture-in-picture"
   allowfullscreen
 ></iframe>
 ```
 
-Do not hard-code one language across a multi-region site. A single `lang=en` on every page means your German and Spanish sections show English subtitles to visitors who came specifically for their own language.
+On a multilingual site, pass the page's language as the initial preference. Viewers can pick another language from the subtitle menu.
 
 ### When the Zone Has No Obvious Language
 
-Some sections are not tied to a language, such as a global "trending" page. Use `lang=en` there rather than leaving the parameter out. An explicit English is predictable; an omitted parameter means the player guesses, and two visitors on the same page can see two different languages.
+For a global page, set `lang=en` if you want English as the default preference. Omit `lang` to let YapGrid infer a preference for each viewer.
 
 ## Supported Language Codes
 
@@ -80,28 +68,18 @@ Use the code from this table as the value of `lang`.
 
 An unrecognised code is ignored rather than rejected, and the player falls back to the steps above. Check the spelling against this table if a language does not appear.
 
-## What `lang` Does Not Do
+## Track Availability
 
-`lang` states a preference. It does not create a subtitle track that does not exist.
+Subtitle tracks vary by movie and episode.
 
 - If a subtitle track exists in that language, it is selected.
 - If it does not, YapGrid can translate an available track into that language when translation is available for the title.
 - If neither is possible, the viewer can still pick any available track from the player.
 
-Subtitle availability varies by title, so a language that works on one movie may have nothing on another.
-
 ## Supplying Your Own Subtitle File
 
-`lang` selects from what YapGrid finds. To attach a specific file of your own, use `sub_url` together with `sub_lang`, described in [Subtitles](subtitles.md). The two can be combined: `sub_url` adds your track, and `lang` still sets the interface language.
+To attach your own file, use `sub_url` with `sub_lang`, as described in [Subtitles](subtitles.md). Set `lang` separately to prefer a subtitle language for the embed.
 
 ```text
 https://yapgrid.com/embed/movie/550?lang=de&sub_url=https%3A%2F%2Fexample.com%2Fsubs%2Fde.vtt&sub_lang=de&sub_label=Deutsch
 ```
-
-## Checklist
-
-- Pass `lang` on every embed rather than relying on detection.
-- Use the value your page already knows, not a fixed one.
-- Use `en` for sections that are not tied to a region.
-- Take the code from the table above, and use `pt-br` rather than `pt` for Brazil.
-- Remember that a preference is not a guarantee: availability still depends on the title.

@@ -2,7 +2,7 @@
 
 ![YapGrid favicon](https://yapgrid.com/favicon.svg)
 
-YapGrid is an ad-free movie and TV streaming embed player for worldwide users. It lets website owners add a public playback experience to movie pages, TV episode pages, blogs, directories, community sites, and entertainment platforms by using simple iframe embed URLs.
+YapGrid is an embeddable player for movies and TV episodes. Website owners can add it to their pages using a public iframe URL and a TMDB ID. Public embeds may display ads.
 
 YapGrid is designed for builders who want to start a movie or TV website without building a custom player from scratch. You only need the public YapGrid embed URL, a TMDB ID, and a responsive iframe. Movies and TV episodes can be embedded directly from `https://yapgrid.com` with no API key required.
 
@@ -11,8 +11,7 @@ YapGrid is designed for builders who want to start a movie or TV website without
 ## Live Website
 
 - Website: <https://yapgrid.com>
-- Movie embed example: <https://yapgrid.com/embed/movie/550>
-- TV embed example: <https://yapgrid.com/embed/tv/1396/1/1>
+- [Movie embed example](https://yapgrid.com/embed/movie/550?autoplay=0)
 
 ## What YapGrid Offers
 
@@ -20,26 +19,25 @@ YapGrid provides a clean public player experience that can be embedded worldwide
 
 - Movies using TMDB movie IDs.
 - TV episodes using TMDB TV IDs, season numbers, and episode numbers.
-- A fast streaming network resolved automatically behind one embed URL per title.
-- Automatic synchronized subtitles when available for the selected title.
-- Local `.srt` and `.vtt` subtitle uploads inside the player.
+- Automatic playback source selection and fallback behind one embed URL per title.
+- Automatic subtitle selection and synchronization when a matching track is available.
 - External subtitle URLs through embed parameters.
 - In-player subtitle translation for users who want subtitles in another language when supported.
-- In-player subtitle timing adjustment, with corrections kept and reused for later viewers.
-- A player interface translated into more than 50 languages.
+- Manual timing adjustment for subtitle tracks with unverified timing.
+- Subtitle language preferences for multilingual sites.
 - Quality selection, playback speed, fullscreen, volume, seek controls, and loading indicators.
 - Responsive behavior for desktop, tablet, and mobile screens.
 
 ## Built for Movie and TV Website Owners
 
-YapGrid is useful when you want to create a movie or TV website that focuses on discovery, catalog pages, watch pages, editorial content, or community recommendations. Instead of designing a player interface, subtitle selector, subtitle upload workflow, subtitle timing controls, and responsive playback layout yourself, you can place a YapGrid iframe on your page and keep your website focused on the user experience around the player.
+You can place a YapGrid iframe on a catalog, watch page, article, or community site. The player supplies the playback controls, subtitle menu, and responsive layout.
 
 A typical website flow can be simple:
 
 1. Create a page for a movie or TV episode.
 2. Store or display the correct TMDB ID.
 3. Add the YapGrid iframe for that movie or episode.
-4. Let the player handle playback controls, subtitles, subtitle uploads, subtitle translation, and subtitle timing.
+4. Let the player handle playback controls, subtitles, translation, and timing.
 
 Website owners remain responsible for how they use public embeds and for following applicable laws, platform rules, and content policies in their own projects.
 
@@ -53,11 +51,14 @@ Subtitle availability, translation availability, and translation quality can var
 
 ## Quick Start
 
+These iframe examples use click-to-play. Playback and subtitle availability vary by title and episode. See [Parameters](docs/parameters.md) for autoplay and subtitle options.
+
 ### Movie Embed
 
 ```html
 <iframe
-  src="https://yapgrid.com/embed/movie/550"
+  src="https://yapgrid.com/embed/movie/550?autoplay=0"
+  title="YapGrid movie player"
   style="width:100%; aspect-ratio:16/9; border:0"
   allow="autoplay; fullscreen; picture-in-picture"
   allowfullscreen
@@ -68,7 +69,8 @@ Subtitle availability, translation availability, and translation quality can var
 
 ```html
 <iframe
-  src="https://yapgrid.com/embed/tv/1396/1/1"
+  src="https://yapgrid.com/embed/tv/1396/1/1?autoplay=0"
+  title="YapGrid TV episode player"
   style="width:100%; aspect-ratio:16/9; border:0"
   allow="autoplay; fullscreen; picture-in-picture"
   allowfullscreen
@@ -99,9 +101,10 @@ No API key is required.
 | [Movie Embed](docs/movie-embed.md) | How to embed movies using TMDB IDs. |
 | [TV Embed](docs/tv-embed.md) | How to embed TV episodes using TMDB IDs, season, and episode numbers. |
 | [Parameters](docs/parameters.md) | Optional query parameters for playback, subtitles, and language. |
-| [Languages](docs/languages.md) | How the language is chosen, and how to set it correctly per region. |
-| [Subtitles](docs/subtitles.md) | Automatic subtitles, local uploads, external subtitle links, translation, and timing. |
+| [Languages](docs/languages.md) | Subtitle language preferences for multilingual sites. |
+| [Subtitles](docs/subtitles.md) | Automatic subtitles, external subtitle links, translation, and timing. |
 | [Player Controls](docs/player-controls.md) | Available controls inside the YapGrid player. |
+| [Use Cases](docs/use-cases.md) | Examples for movie pages, TV pages, and multilingual sites. |
 | [Troubleshooting](docs/troubleshooting.md) | Common embed and playback issues. |
 | [FAQ](docs/faq.md) | Frequently asked questions. |
 | [Contributing](CONTRIBUTING.md) | How to improve this documentation. |

@@ -12,7 +12,7 @@ YapGrid documentation is useful for:
 - Developers building movie detail pages, episode pages, or entertainment directories.
 - Publishers who want a responsive player area inside articles or landing pages.
 - Communities that want a simple embed format for movie and TV pages.
-- International websites that need subtitles, subtitle upload, and in-player subtitle translation.
+- International websites that need subtitle language selection and in-player translation.
 
 This repository explains public embed usage only. It does not include application source code or private operational details.
 
@@ -35,7 +35,7 @@ A simple YapGrid integration usually looks like this:
 3. Build the YapGrid embed URL.
 4. Place the URL inside an iframe.
 5. Use a responsive 16:9 layout so the player works across screen sizes.
-6. Add optional query parameters for autoplay, title, language, or subtitles.
+6. Add optional query parameters for autoplay, subtitle language, or external subtitles.
 
 ## Movie URL Format
 
@@ -67,7 +67,8 @@ Use a responsive 16:9 layout so the player scales cleanly across desktop, tablet
 
 ```html
 <iframe
-  src="https://yapgrid.com/embed/movie/550"
+  src="https://yapgrid.com/embed/movie/550?autoplay=0"
+  title="YapGrid movie player"
   style="width:100%; aspect-ratio:16/9; border:0"
   allow="autoplay; fullscreen; picture-in-picture"
   allowfullscreen
@@ -78,7 +79,7 @@ Use a responsive 16:9 layout so the player scales cleanly across desktop, tablet
 
 The iframe approach makes YapGrid easy to place inside many types of websites. You can build your own website design, navigation, search pages, movie cards, TV episode pages, and recommendation sections around the player while keeping the actual player experience consistent.
 
-Inside the player, users can access playback controls, quality selection, subtitles, subtitle upload, subtitle translation, subtitle timing adjustment, playback speed, volume, fullscreen, and loading indicators.
+Inside the player, viewers can choose subtitle and audio tracks, change playback speed and quality, and enter fullscreen where supported.
 
 ## Subtitle Translation
 
@@ -90,7 +91,7 @@ Availability may vary by title, language, and browser behavior.
 
 ## Optional Parameters
 
-YapGrid supports optional query parameters for autoplay, subtitle language, title, and external subtitles.
+The player requests autoplay by default. Set `autoplay=0` to wait for the viewer to press Play, as in the iframe above.
 
 See [Parameters](parameters.md) for the full list.
 

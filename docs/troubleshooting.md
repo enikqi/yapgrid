@@ -4,19 +4,19 @@ Use this guide when an embed does not behave as expected.
 
 ## Timeout
 
-Retry playback. If the title still does not start, try again later.
+Use **Try again** if the player cannot find a playback source. If the title is still unavailable, try another title to check the embed setup.
 
 ## No Stream Found
 
-Availability can differ between titles and can change over time. Confirm the TMDB ID is correct for the movie or episode, then retry.
+Check that you used the movie or show TMDB ID and, for TV, the correct season and episode numbers. Availability varies by title and can change over time.
 
 ## Subtitles Out of Sync
 
-Use the timing control next to the subtitle list to shift subtitles earlier or later in half-second steps. If a track is far out, switching to a different subtitle track is usually faster than a large shift.
+For a track marked **Unverified timing**, use the controls next to the time bar to shift it in half-second steps. If the mismatch grows during playback, try another track for that release.
 
 ## Autoplay Blocked
 
-Interact with the player manually. Browsers may block autoplay, especially when sound is enabled.
+Press **Play** if the browser blocks autoplay. If playback starts muted, use the volume control to turn on sound.
 
 ## Fullscreen Unavailable
 
@@ -31,17 +31,7 @@ allowfullscreen
 
 ## External Subtitles Not Loading
 
-Check the following:
-
-- The subtitle URL uses HTTPS or HTTP.
-- The subtitle URL is URL-encoded.
-- The subtitle file is `.srt` or `.vtt`.
-- The subtitle host allows browser CORS access.
-- The subtitle file is available to the viewer’s browser.
-
-## Local Subtitle Upload Rejected
-
-Use a `.srt` or `.vtt` file under 5 MB.
+Confirm `sub_url` contains a URL-encoded, publicly reachable HTTPS link to an `.srt` or `.vtt` file. Open the original URL to check that it returns the subtitle file. See [Subtitles](subtitles.md#external-subtitle-urls).
 
 ## Embed Sizing Issues
 
@@ -53,4 +43,4 @@ style="width:100%; aspect-ratio:16/9; border:0"
 
 ## Changes Not Showing
 
-Hard refresh the browser after changing embed parameters.
+Reload the embed after changing its URL. If the subtitle language still differs from your setting, open **Subtitles**, then **Language**, to check the viewer's saved preference.

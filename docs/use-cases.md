@@ -10,7 +10,8 @@ A movie page can include a title, description, artwork, metadata, and a responsi
 
 ```html
 <iframe
-  src="https://yapgrid.com/embed/movie/550"
+  src="https://yapgrid.com/embed/movie/550?autoplay=0"
+  title="YapGrid movie player"
   style="width:100%; aspect-ratio:16/9; border:0"
   allow="autoplay; fullscreen; picture-in-picture"
   allowfullscreen
@@ -25,7 +26,8 @@ A TV episode page can include the show title, season number, episode number, epi
 
 ```html
 <iframe
-  src="https://yapgrid.com/embed/tv/1396/1/1"
+  src="https://yapgrid.com/embed/tv/1396/1/1?autoplay=0"
+  title="YapGrid TV episode player"
   style="width:100%; aspect-ratio:16/9; border:0"
   allow="autoplay; fullscreen; picture-in-picture"
   allowfullscreen
@@ -36,7 +38,7 @@ The TV embed format uses a TMDB TV ID, season number, and episode number.
 
 ## International Subtitle Support
 
-YapGrid is useful for international movie and TV websites because the player supports automatic subtitles, local subtitle uploads, external subtitle URLs, and subtitle translation when available.
+YapGrid supports automatic subtitles, external subtitle URLs, and subtitle translation when available.
 
 Subtitle translation can help viewers read subtitles in a preferred language without leaving the player interface.
 
@@ -58,4 +60,4 @@ A website stores one embed URL per movie or episode. YapGrid resolves the playba
 https://yapgrid.com/embed/movie/550?sub_url=https%3A%2F%2Fexample.com%2Fsubtitles%2Fenglish.srt&sub_lang=en&sub_label=English
 ```
 
-External subtitle URLs must be URL-encoded and accessible by the viewer’s browser.
+Use a URL-encoded, publicly reachable HTTPS URL for the subtitle file.

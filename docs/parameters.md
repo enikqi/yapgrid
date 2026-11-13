@@ -12,14 +12,15 @@ https://yapgrid.com/embed/movie/550?autoplay=1&lang=en
 
 | Parameter | Type | Values / Example | Description |
 | --- | --- | --- | --- |
-| `autoplay` | boolean | `1`, `0`, `true`, `false` | Requests automatic playback. Browsers may still block autoplay with sound, so users may need to start playback manually. |
-| `lang` | string | `en`, `sq`, `de`, `fr` | Preferred/default subtitle language. Also sets the language of the player interface. |
-| `title` | string | `Fight%20Club` | Overrides the title displayed by the player. Text values should be URL-encoded. |
-| `sub_url` | string | URL-encoded `.srt` or `.vtt` URL | Adds an external subtitle file. The subtitle host must allow browser CORS access. |
-| `sub_lang` | string | `en`, `sq`, `de`, `fr` | Language code for the subtitle supplied through `sub_url`. |
+| `autoplay` | boolean | `1`, `0`, `true`, `false` | Defaults to on. Use `0` or `false` for click-to-play. If the browser blocks autoplay with sound, the player tries muted playback. |
+| `lang` | language code | `en`, `sq`, `de`, `fr` | Preferred subtitle language. The main player controls are in English. |
+| `title` | string | `Fight%20Club` | Fallback display title when title metadata is unavailable. |
+| `theme` | string | `blue`, `amber`, `%2322c55e` | Accent color for supported controls. Use a supported color name such as `blue` or a URL-encoded six-digit hex color. |
+| `sub_url` | URL | URL-encoded `.srt` or `.vtt` URL | Adds an external subtitle track. Use a publicly reachable HTTPS file URL. |
+| `sub_lang` | language code | `en`, `sq`, `de`, `fr` | Language of the external track. It also supplies the embed's subtitle language preference when `lang` and `sub` are omitted. |
 | `sub_label` | string | `English` | Custom name displayed for the external subtitle track. |
 
-Any parameter not listed here is ignored. Unknown parameters do not cause an error, so an embed URL that carries extra values from another player still loads normally.
+Use the parameters in this table for new integrations.
 
 ## Accepted Aliases
 
@@ -46,7 +47,7 @@ https://yapgrid.com/embed/movie/550?autoplay=1&lang=en&sub_url=https%3A%2F%2Fexa
 
 ## URL Encoding
 
-Values such as `title`, `sub_url`, and `sub_label` should be URL-encoded when they contain spaces, symbols, or a full URL.
+URL-encode values such as `title`, `sub_url`, and `sub_label` when building a URL by hand. If you use `URLSearchParams`, pass it the original values so it encodes them once.
 
 Example:
 

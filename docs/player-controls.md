@@ -23,17 +23,17 @@ Browser and device settings may also affect audio behavior, especially on mobile
 ## Streaming Options
 
 - **Quality selector**: Select a playback quality when multiple quality options are available.
-- **Buffering and loading indicators**: See when content is preparing, loading, or switching.
+- **Audio track selector**. Choose another audio track when the source provides multiple tracks.
+- **Buffering and loading indicators**. See when the player is loading or switching sources.
 
 A website can use one embed URL per title. Playback sources are resolved by YapGrid, so the embed URL does not change when the underlying source changes.
 
 ## Subtitles
 
 - **Subtitle selector**: Choose from available subtitle tracks.
-- **Local subtitle upload**: Upload `.srt` or `.vtt` files for the current browser session.
 - **External subtitle support**: Use embed parameters to attach a subtitle file URL.
 - **Subtitle translation**: Translate subtitles from inside the player when available.
-- **Subtitle timing adjustment**: Shift subtitles earlier or later when they run out of sync.
+- **Subtitle timing adjustment**. Shift subtitle tracks with unverified timing earlier or later.
 
 ### Subtitle Translation
 
@@ -45,30 +45,16 @@ Translation availability and quality can vary by title, subtitle track, language
 
 ### Subtitle Timing Adjustment
 
-Subtitle files are timed against a particular release of a title. When a viewer watches a different cut, the subtitles can run a few seconds early or late. YapGrid lets the viewer correct this from inside the player instead of hunting for a better subtitle file.
+For tracks with unverified timing, use the controls next to the time bar. Each click shifts the subtitles by half a second, up to five minutes in either direction. Manual shifts are saved in the current browser. See [Subtitles](subtitles.md#subtitle-timing-adjustment) for details.
 
-The timing control sits next to the subtitle list:
+## Subtitle Language
 
-- Shift the subtitles earlier or later in steps of `0.5` seconds.
-- The current shift is shown while adjusting, so the viewer can see the correction before applying it.
-- Adjustments are limited to `120` seconds in either direction.
-
-A correction is not private to the viewer who made it. Once someone fixes the timing for a subtitle track, the corrected version is what the next viewer of that title receives. One person spending ten seconds on the control fixes the title for everyone who comes after them, which is why the feature gets more accurate as a title is watched more.
-
-## Interface Language
-
-The player interface is translated into more than 50 languages. Use the `lang` parameter to set it:
-
-```text
-https://yapgrid.com/embed/movie/550?lang=de
-```
-
-When `lang` is not supplied, the player selects a language for the viewer automatically. The same value also sets the preferred subtitle language, so a single parameter covers both.
+Open **Subtitles**, then **Language** to choose the preferred subtitle language. Website owners can set the initial preference with `lang`. See [Languages](languages.md).
 
 ## Viewing
 
 - **Fullscreen**: Expand the player to fullscreen when allowed by the browser and iframe permissions.
-- **Picture-in-picture**: Use picture-in-picture when supported by the browser.
+- **Next episode**. Open the next episode number in the current season from a TV embed.
 - **Responsive layout**: The player is designed to fit desktop, tablet, and mobile layouts.
 
 For fullscreen support, the iframe should include `allowfullscreen` and `allow="fullscreen"` or a broader allow value that includes fullscreen permission.
@@ -96,4 +82,4 @@ allow="autoplay; fullscreen; picture-in-picture"
 allowfullscreen
 ```
 
-Autoplay may still be blocked by browser policy, especially when audio is enabled.
+The player requests autoplay by default and may start muted. Browser policy can still require the viewer to press Play.

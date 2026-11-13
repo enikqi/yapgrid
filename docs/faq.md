@@ -14,29 +14,23 @@ Website owners are responsible for how they use embeds and for following applica
 
 ## What makes YapGrid useful for international users?
 
-YapGrid supports subtitles, local subtitle uploads, external subtitle URLs, and subtitle translation inside the player when available.
+YapGrid supports subtitle language preferences, external subtitle URLs, and in-player subtitle translation when available.
 
 Subtitle translation is especially useful because users can adjust subtitle language options directly from the player controls instead of leaving the viewing experience to look for another subtitle file.
 
 ## What if the subtitles are out of sync?
 
-Viewers can shift subtitles earlier or later from the player, in steps of half a second. The correction is kept and reused, so the next viewer of that title gets subtitles that already line up.
+Viewers can shift tracks with unverified timing in half-second steps. The player saves manual adjustments in the current browser.
 
 ## Do I need a different URL for each playback source?
 
 No. One embed URL per title is enough. YapGrid resolves the playback source, so your embed URL does not change when the source does.
 
-## Can users upload subtitles?
-
-Yes. Users can upload local `.srt` or `.vtt` subtitle files from the player.
-
-Local subtitle uploads are limited to 5 MB and remain inside the user’s browser session.
-
 ## Can users attach an external subtitle URL?
 
 Yes. Website owners can use the `sub_url` parameter to attach an external `.srt` or `.vtt` subtitle file.
 
-The subtitle URL must be URL-encoded, available over HTTP or HTTPS, and accessible by the browser with CORS allowed.
+Use a publicly reachable HTTPS file URL and URL-encode it in the embed. See [Subtitles](subtitles.md) for examples.
 
 ## Can subtitles be translated inside the player?
 
@@ -60,9 +54,13 @@ TV episodes use this format:
 https://yapgrid.com/embed/tv/{tmdbId}/{season}/{episode}
 ```
 
-## Can autoplay always be guaranteed?
+## How does autoplay work?
 
-No. Browser autoplay policies apply. Users may need to start playback manually.
+The player requests autoplay by default. It can start muted if the browser blocks sound. Set `autoplay=0` to wait for the viewer to press Play.
+
+## Can public embeds show ads?
+
+Yes. Ads may appear in the public player.
 
 ## Does this repository contain the player source code?
 

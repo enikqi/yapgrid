@@ -20,7 +20,8 @@ https://yapgrid.com/embed/movie/550
 
 ```html
 <iframe
-  src="https://yapgrid.com/embed/movie/550"
+  src="https://yapgrid.com/embed/movie/550?autoplay=0"
+  title="YapGrid movie player"
   style="width:100%; aspect-ratio:16/9; border:0"
   allow="autoplay; fullscreen; picture-in-picture"
   allowfullscreen
@@ -37,15 +38,9 @@ Example with autoplay and a preferred subtitle language:
 https://yapgrid.com/embed/movie/550?autoplay=1&lang=en
 ```
 
-Example with a custom displayed title:
-
-```text
-https://yapgrid.com/embed/movie/550?title=Fight%20Club
-```
-
-When adding text values such as a title, URL-encode spaces and special characters.
+Use `autoplay=0` to wait for the viewer to press Play. See [Parameters](parameters.md) for the full list of options.
 
 ## Notes
 
 - Subtitle availability can vary by movie.
-- Autoplay may still be blocked by browser policy, especially when sound is enabled.
+- Browsers may start autoplay muted or require the viewer to press Play.

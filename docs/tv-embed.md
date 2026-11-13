@@ -24,7 +24,8 @@ https://yapgrid.com/embed/tv/1396/1/1
 
 ```html
 <iframe
-  src="https://yapgrid.com/embed/tv/1396/1/1"
+  src="https://yapgrid.com/embed/tv/1396/1/1?autoplay=0"
+  title="YapGrid TV episode player"
   style="width:100%; aspect-ratio:16/9; border:0"
   allow="autoplay; fullscreen; picture-in-picture"
   allowfullscreen
@@ -39,12 +40,9 @@ Example with autoplay and a preferred subtitle language:
 https://yapgrid.com/embed/tv/1396/1/1?autoplay=1&lang=en
 ```
 
-Example with a custom displayed title:
-
-```text
-https://yapgrid.com/embed/tv/1396/1/1?title=Breaking%20Bad%20S01E01
-```
+Use the season and episode numbers from the show's TMDB listing. See [Parameters](parameters.md) for other options.
 
 ## Notes
 
-- Subtitle availability can vary by episode.
+- Playback and subtitle availability can vary by episode.
+- The **Next episode** button opens the next episode number in the current season. To start another season, use its season and episode numbers in the embed URL.
